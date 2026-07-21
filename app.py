@@ -64,20 +64,21 @@ if "compare_list" not in st.session_state:
     st.session_state["compare_list"] = []
 
 # ==================== 2. 侧边栏导航 ====================
+# ==================== 2. 侧边栏导航 ====================
 with st.sidebar:
     st.title("🧭 Career Navigator")
     st.markdown("### 🌟 求职全链路终端")
     
-    menu = st.radio("导航菜单", [
-        "🎯 行业探索", 
-        "🗺️ 职业地图 (Tree)", 
-        "📌 岗位详情", 
-        "🏢 公司情报", 
-        "📊 JD 技能分析",
-        "⚖️ 岗位横向对比"
-    ])
+    # 建立反向映射（从页面代码映射到菜单文字）
+    page_to_menu = {
+        "industry_explore": "🎯 行业探索",
+        "explore_map": "🗺️ 职业地图 (Tree)",
+        "position_detail": "📌 岗位详情",
+        "company_detail": "🏢 公司情报",
+        "jd_analysis": "📊 JD 技能分析",
+        "position_compare": "⚖️ 岗位横向对比"
+    }
     
-    # 路由映射
     menu_mapping = {
         "🎯 行业探索": "industry_explore",
         "🗺️ 职业地图 (Tree)": "explore_map",
@@ -86,7 +87,21 @@ with st.sidebar:
         "📊 JD 技能分析": "jd_analysis",
         "⚖️ 岗位横向对比": "position_compare"
     }
-    st.session_state["page"] = menu_mapping[menu]
+    
+    # 获取当前应该选中的菜单项索引
+    current_page = st.session_state.get("page", "industry_explore")
+    default_menu_title = page_to_menu.get(current_page, "🎯 行业探索")
+    menu_options = list(menu_mapping.keys())
+    default_index = menu_options.index(default_menu_title)
+    
+    # 用 index 参数同步状态，避免被强行重置
+    menu = st.radio("导航菜单", menu_options, index=default_index)
+    
+    # 只有当用户真正在侧边栏切换了菜单时，才更新 page
+    new_page = menu_mapping[menu]
+    if new_page != st.session_state["page"]:
+        st.session_state["page"] = new_page
+        st.rerun()
 
     st.markdown("---")
     if st.button("🔄 清空所有缓存与重置", use_container_width=True):
