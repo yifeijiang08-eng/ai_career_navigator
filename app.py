@@ -65,19 +65,24 @@ if "compare_list" not in st.session_state:
 
 # ==================== 2. 侧边栏导航 ====================
 # ==================== 2. 侧边栏导航 ====================
+# ==================== 2. 侧边栏导航 ====================
 with st.sidebar:
     st.title("🧭 Career Navigator")
     st.markdown("### 🌟 求职全链路终端")
     
-    # 建立反向映射（从页面代码映射到菜单文字）
-    page_to_menu = {
-        "industry_explore": "🎯 行业探索",
-        "explore_map": "🗺️ 职业地图 (Tree)",
-        "position_detail": "📌 岗位详情",
-        "company_detail": "🏢 公司情报",
-        "jd_analysis": "📊 JD 技能分析",
-        "position_compare": "⚖️ 岗位横向对比"
-    }
+    # 确保 session_state 中有 page 初始值
+    if "page" not in st.session_state:
+        st.session_state["page"] = "industry_explore"
+
+    # 建立选项到内部代号的映射
+    menu_options = [
+        "🎯 行业探索", 
+        "🗺️ 职业地图 (Tree)", 
+        "📌 岗位详情", 
+        "🏢 公司情报", 
+        "📊 JD 技能分析",
+        "⚖️ 岗位横向对比"
+    ]
     
     menu_mapping = {
         "🎯 行业探索": "industry_explore",
@@ -88,21 +93,27 @@ with st.sidebar:
         "⚖️ 岗位横向对比": "position_compare"
     }
     
-    # 获取当前应该选中的菜单项索引
-    current_page = st.session_state.get("page", "industry_explore")
-    default_menu_title = page_to_menu.get(current_page, "🎯 行业探索")
-    menu_options = list(menu_mapping.keys())
-    default_index = menu_options.index(default_menu_title)
-    
-    # 用 index 参数同步状态，避免被强行重置
-    menu = st.radio("导航菜单", menu_options, index=default_index)
-    
-    # 只有当用户真正在侧边栏切换了菜单时，才更新 page
-    new_page = menu_mapping[menu]
-    if new_page != st.session_state["page"]:
-        st.session_state["page"] = new_page
-        st.rerun()
+    reverse_mapping = {v: k for k, v in menu_mapping.items()}
 
+    # 获取当前 page 对应的默认选中项文字
+    current_selection = reverse_mapping.get(st.session_state["page"], "🎯 行业探索")
+
+    # 【核心关键】：使用 key 和 index 配合，让 Streamlit 自动托管状态，防止被强行覆盖
+    selected_menu = st.radio(
+        "导航菜单", 
+        menu_options, 
+        index=menu_options.index(current_selection),
+        key="sidebar_navigation_radio"
+    )
+    
+    # 将用户在侧边栏的选择同步到 session_state["page"]
+    st.session_state["page"] = menu_mapping[selected_menu]
+
+    st.markdown("---")
+    if st.button("🔄 清空所有缓存与重置", use_container_width=True):
+        st.cache_data.clear()
+        st.session_state.clear()
+        st.rerun()
     st.markdown("---")
     if st.button("🔄 清空所有缓存与重置", use_container_width=True):
         st.cache_data.clear()
