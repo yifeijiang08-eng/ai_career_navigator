@@ -45,7 +45,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-ai = AIService()
+@st.cache_resource
+def get_ai_service():
+    return AIService()
+
+ai = get_ai_service()
 
 # 初始化页面状态流转
 if "page" not in st.session_state:
