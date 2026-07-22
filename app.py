@@ -8,6 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
+# 缓存并初始化 AI 服务
 @st.cache_resource
 def get_ai_service():
     return AIService()
