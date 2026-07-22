@@ -11,7 +11,8 @@ class AIService:
             os.environ.get("GOOGLE_API_KEY") or 
             ""
         )
-        
+        self.client = genai.Client(api_key=self.api_key)
+        self.model_name = "gemini-1.5-flash"
         # 调试日志：可以在 Streamlit 后台看到是否成功读到了 Key
         if not self.api_key:
             print("❌ 警告：未检测到 GEMINI_API_KEY，请检查 Streamlit Secrets 设置！")
