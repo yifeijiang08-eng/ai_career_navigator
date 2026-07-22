@@ -12,7 +12,7 @@ class AIService:
             ""
         )
         self.client = genai.Client(api_key=self.api_key)
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-2.0-flash"
         # 调试日志：可以在 Streamlit 后台看到是否成功读到了 Key
         if not self.api_key:
             print("❌ 警告：未检测到 GEMINI_API_KEY，请检查 Streamlit Secrets 设置！")
@@ -21,7 +21,7 @@ class AIService:
 
         # 初始化 Google GenAI 客户端
         self.client = genai.Client(api_key=self.api_key)
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-2.0-flash"
 
     def _call_gemini_json(self, prompt: str) -> dict:
         """通用私有方法：调用 Gemini 并强制输出标准 JSON 格式"""
