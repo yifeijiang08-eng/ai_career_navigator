@@ -15,7 +15,7 @@ class AIService:
             
         # 显式传入 api_key 初始化 Gemini 客户端
         self.client = genai.Client(api_key=self.api_key)
-        self.model_name = "gemini-2.5-flash"
+        self.model_name = "gemini-1.5-flash"
 
     def _call_gemini_json(self, prompt: str) -> dict:
         """通用私有方法：调用 Gemini 并强制输出标准 JSON 格式"""
