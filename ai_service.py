@@ -5,13 +5,15 @@ from google.genai import types
 
 class AIService:
     def __init__(self):
-        # 从环境变量或 Streamlit Secrets 中获取 Gemini API Key
-        self.api_key = os.environ.get("GEMINI_API_KEY", "")
-        if not self.api_key:
-            # 兼容有些用户习惯把 key 填在 OPENAI_API_KEY 的位置
-            self.api_key = os.environ.get("OPEN_API_KEY", "")
+        # 多重保险：自动兼容所有常见的 Key 变量命名
+        self.api_key = (
+            os.environ.get("GEMINI_API_KEY") or 
+            os.environ.get("GOOGLE_API_KEY") or 
+            os.environ.get("OPENAI_API_KEY") or 
+            ""
+        )
             
-        # 初始化 Gemini 客户端 (使用推荐的 gemini-2.5-flash 模型，速度极快且免费额度高)
+        # 显式传入 api_key 初始化 Gemini 客户端
         self.client = genai.Client(api_key=self.api_key)
         self.model_name = "gemini-2.5-flash"
 
