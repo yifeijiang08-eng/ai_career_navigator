@@ -5,15 +5,20 @@ from google.genai import types
 
 class AIService:
     def __init__(self):
-        # 多重保险：自动兼容所有常见的 Key 变量命名
+        # 从 Streamlit Secrets 或系统环境变量中安全读取 API Key
         self.api_key = (
             os.environ.get("GEMINI_API_KEY") or 
             os.environ.get("GOOGLE_API_KEY") or 
-            os.environ.get("OPENAI_API_KEY") or 
             ""
         )
-            
-        # 显式传入 api_key 初始化 Gemini 客户端
+        
+        # 调试日志：可以在 Streamlit 后台看到是否成功读到了 Key
+        if not self.api_key:
+            print("❌ 警告：未检测到 GEMINI_API_KEY，请检查 Streamlit Secrets 设置！")
+        else:
+            print("✅ 成功：已加载 Gemini API Key")
+
+        # 初始化 Google GenAI 客户端
         self.client = genai.Client(api_key=self.api_key)
         self.model_name = "gemini-1.5-flash"
 
@@ -83,7 +88,7 @@ class AIService:
             "workflow": ["日常工作步骤1", "步骤2"],
             "tech_stack": ["技术1", "技术2"],
             "recommended_projects": ["练手项目1", "项目2"],
-            "interview_tips": ["面试考点1", "考点2"]
+            "interview_tips": ["面试考点1", "面试考点2"]
         }}
         """
         return self._call_gemini_json(prompt)
