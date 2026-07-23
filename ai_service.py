@@ -25,7 +25,7 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "你是一个资深的全球 500 强企业人力资源总监（HRD）、技术合伙人兼资深面试官。你精通 ATS 机器筛选、候选人履历深度对标、量化逻辑防穿帮以及面试行为学面试。必须输出严格的 JSON 格式数据。"},
+                    {"role": "system", "content": "你是一个资深的全球 500 强企业人力资源总监（HRD）、技术合伙人兼资深猎头。精通全球企业文化、组织架构、岗位性格匹配（MBTI）以及简历硬核对标。必须输出严格的 JSON 格式数据。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -100,12 +100,15 @@ class AIService:
             "responsibilities": ["硬核职责1（含具体工作目标）", "职责2", "职责3"],
             "workflow": ["日常工作步骤1", "步骤2", "步骤3"],
             "tech_stack": ["必备硬技能1", "技能2", "技能3"],
+            "communication_and_mbti": [
+                "性格沟通特点要求1",
+                "MBTI 倾向建议（例如：更适合 E人 还是 I人，原因说明）"
+            ],
             "recommended_projects": ["具备行业含金量的实战练手项目1", "项目2"],
             "interview_tips": [
                 "高频硬核面试考点1（附解题思路/考察意图）",
                 "高频硬核面试考点2",
-                "高频硬核面试考点3",
-                "高频硬核面试考点4"
+                "高频硬核面试考点3"
             ]
         }}
         """
@@ -121,6 +124,12 @@ class AIService:
             "intro": "公司背景、核心技术壁垒与团队规模",
             "salary_benefits": "薪资结构、期权政策与福利特点",
             "cities": ["主要办公城市1", "城市2"],
+            "company_scores": {{
+                "internal_environment": 88,
+                "benefits_score": 90,
+                "overtime_score": 75,
+                "holiday_score": 85
+            }},
             "open_positions_with_details": [
                 {{
                     "position_title": "热招岗位名称1",

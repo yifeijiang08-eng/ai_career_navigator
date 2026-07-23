@@ -73,7 +73,7 @@ if "current_page" not in st.session_state:
 if "target_position" not in st.session_state:
     st.session_state.target_position = "大模型产品经理"
 if "target_company" not in st.session_state:
-    st.session_state.target_company = "OpenAI"
+    st.session_state.target_company = "微软 (Microsoft)"
 
 # ================= 侧边栏导航菜单 =================
 with st.sidebar:
@@ -172,7 +172,7 @@ if page == "行业全景导航":
                         st.rerun()
                 with col_btn2:
                     if st.button(f"🏢 查看【{p_title}】相关公司招聘情报", key=f"jump_comp_for_{p_title}", use_container_width=True):
-                        first_comp = "OpenAI"
+                        first_comp = "微软 (Microsoft)"
                         if pos.get('big_tech_companies'):
                             first_comp = pos.get('big_tech_companies')[0].get('name')
                         elif pos.get('boutique_companies'):
@@ -278,13 +278,13 @@ elif page == "职业生态树":
 
 # ---------------- 3. 岗位深度解析 ----------------
 elif page == "岗位深度解析":
-    st.markdown("## 🎯 岗位深度硬核解析")
+    st.markdown("## 🎯 岗位深度硬核解析与性格匹配（MBTI/E-I人）")
     
     default_pos = st.session_state.get("target_position", "大模型产品经理")
     pos_name = st.text_input("请输入或确认要深度解构的岗位名称：", value=default_pos)
     
-    if st.button("开始深度剖析与面试考点拆解", type="primary") or pos_name:
-        with st.spinner(f"AI 正在深度剖析【{pos_name}】的底层逻辑、技术栈与高频面试真题..."):
+    if st.button("开始深度剖析与性格特点拆解", type="primary") or pos_name:
+        with st.spinner(f"AI 正在深度剖析【{pos_name}】的技术栈、日常工作流与 MBTI 性格匹配倾向..."):
             res = ai.position_detail(pos_name)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -311,10 +311,10 @@ elif page == "岗位深度解析":
                     
                     st.markdown("""
                     <div class="raised-card">
-                        <h4 style="color:#1b4332;">📝 典型日常工作流</h4>
+                        <h4 style="color:#1b4332;">👥 沟通特点与 MBTI 性格倾向（E人/I人适配）</h4>
                     """, unsafe_allow_html=True)
-                    for wf in res.get('workflow', []):
-                        st.markdown(f"- 📌 {wf}")
+                    for comm in res.get('communication_and_mbti', []):
+                        st.markdown(f"- 💡 {comm}")
                     st.markdown("</div>", unsafe_allow_html=True)
 
                 with col_d2:
@@ -345,19 +345,20 @@ elif page == "岗位深度解析":
 
 # ---------------- 4. 公司情报站 ----------------
 elif page == "公司情报站":
-    st.markdown("## 🏢 公司情报站与实时职位库")
+    st.markdown("## 🏢 公司情报站与多维评分雷达（环境、福利、加班、假期）")
     
-    default_comp = st.session_state.get("target_company", "OpenAI")
-    default_pos = st.session_state.get("target_position", "")
+    # 彻底修复：使用独立的 Session State 变量，防止输入框死锁在固定值
+    if "input_company_name" not in st.session_state:
+        st.session_state.input_company_name = st.session_state.get("target_company", "微软 (Microsoft)")
     
     col_c1, col_c2 = st.columns([2, 1])
     with col_c1:
-        company_name = st.text_input("请输入目标公司名称：", value=default_comp)
+        company_name = st.text_input("请输入目标公司名称：", key="input_company_name")
     with col_c2:
-        filter_pos = st.text_input("关联聚焦的岗位（可选）：", value=default_pos)
+        filter_pos = st.text_input("关联聚焦的岗位（可选）：", value=st.session_state.get("target_position", ""))
     
-    if st.button("获取深度公司情报", type="primary") or company_name:
-        with st.spinner(f"AI 正在搜集【{company_name}】针对【{filter_pos if filter_pos else '全岗位'}】的组织架构与招聘情报..."):
+    if st.button("获取深度公司情报与多维评分", type="primary") or company_name:
+        with st.spinner(f"AI 正在独立搜集【{company_name}】针对【{filter_pos if filter_pos else '全岗位'}】的真实环境、福利及热招职位..."):
             res = ai.company_detail(company_name, filter_pos)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -372,6 +373,19 @@ elif page == "公司情报站":
                     <p><strong>💬 员工真实评价：</strong>{res.get('employee_review', '')}</p>
                 </div>
                 """, unsafe_allow_html=True)
+                
+                # 公司多维评分面板
+                st.markdown("""
+                <div class="raised-card" style="background: #fafdfb;">
+                    <h3 style="color:#1b4332; margin-top:0;">📊 公司多维体验综合评分面板</h3>
+                """, unsafe_allow_html=True)
+                c_scores = res.get('company_scores', {})
+                cs1, cs2, cs3, cs4 = st.columns(4)
+                cs1.metric("内部办公环境", f"{c_scores.get('internal_environment', 85)}分")
+                cs2.metric("薪酬福利水平", f"{c_scores.get('benefits_score', 88)}分")
+                cs3.metric("工作强度/少加班度", f"{c_scores.get('overtime_score', 75)}分")
+                cs4.metric("假期制度丰富度", f"{c_scores.get('holiday_score', 80)}分")
+                st.markdown("</div>", unsafe_allow_html=True)
                 
                 st.markdown(f"### 📋 {company_name} 当前热招职位明细清单")
                 open_pos = res.get('open_positions_with_details', [])
@@ -404,9 +418,9 @@ elif page == "JD 简历优化":
     with col_s1:
         target_pos_input = st.text_input("🎯 目标职位：", value=st.session_state.get("target_position", "大模型产品经理"))
     with col_s2:
-        target_comp_input = st.text_input("🏢 目标公司：", value=st.session_state.get("target_company", "OpenAI"))
+        target_comp_input = st.text_input("🏢 目标公司：", value=st.session_state.get("target_company", "微软 (Microsoft)"))
     with col_s3:
-        target_loc_input = st.text_input("📍 工作地点：", value="旧金山 / 远程")
+        target_loc_input = st.text_input("📍 工作地点：", value="北京 / 远程")
         
     jd_text = st.text_area("📋 请粘贴目标岗位的 JD（招聘要求）原文：", height=150, placeholder="在此粘贴招聘 JD 原文...")
     user_resume = st.text_area("📄 请粘贴你目前的原始简历内容：", height=200, placeholder="在此粘贴你的工作经历、项目经历等原始简历文本...")
@@ -505,7 +519,7 @@ elif page == "JD 简历优化":
                     for idx, exp in enumerate(res.get('enhanced_experience_bullets', []), 1):
                         st.markdown(f"""
                         <div class="raised-card" style="background: #fcfdfc; border-left: 4px solid #40916c;">
-                            <p style="color: #666; font-size: 13px; margin-bottom: 4px;"><strong>原话术片段 {idx}：</strong> {exp.get('original_snippet')}</p>
+                            <p style="color: #666; font-size: 13px; margin-bottom: 4px;"><strong>原话术片段 {idx}：** {exp.get('original_snippet')}</p>
                             <p style="color: #1b4332; font-size: 15px; font-weight: 600; margin-top: 8px;"><strong>🔥 润色后话术（高亮标注）：</strong></p>
                             <p style="background: #e8f5e9; padding: 10px; border-radius: 6px; color: #2e7d32; font-size: 15px;">{exp.get('optimized_snippet')}</p>
                             <p style="color: #52796f; font-size: 13px; margin-top: 6px;"><strong>💡 顾问解析：</strong> {exp.get('reason_for_change')}</p>
