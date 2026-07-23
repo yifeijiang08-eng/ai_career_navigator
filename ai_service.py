@@ -25,7 +25,7 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "你是一个资深的全球科技与人工智能行业猎头、职业规划专家。你必须输出极度详尽、深度、包含大量行业干货和真实现状的 JSON 格式数据。严禁套话空话。"},
+                    {"role": "system", "content": "你是一个资深的全球科技与人工智能行业猎头、ATS简历优化专家。你必须输出极度详尽、深度、包含真实 ATS 过筛机制与行业干货的 JSON 格式数据。严禁套话。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -111,9 +111,10 @@ class AIService:
         """
         return self._call_gemini_json(prompt)
 
-    def company_detail(self, company: str) -> dict:
+    def company_detail(self, company: str, target_position: str = "") -> dict:
+        pos_filter = f"，并重点展示或匹配【{target_position}】该岗位的招聘与业务需求" if target_position else ""
         prompt = f"""
-        请提供【{company}】这家公司的深度求职情报。
+        请提供【{company}】这家公司的深度求职情报{pos_filter}。
         必须严格输出 JSON 结构：
         {{
             "name": "{company}",
@@ -140,14 +141,14 @@ class AIService:
 
     def jd_analysis(self, jd_text: str) -> dict:
         prompt = f"""
-        请深度分析以下招聘 JD 原文，并给出精准的技能拆解与简历优化指南：
+        请深度分析以下招聘 JD 原文，重点针对 ATS（Applicant Tracking System，申请人跟踪系统）的机器筛选机制，给出过筛策略与关键词优化：
         {jd_text}
         必须严格输出 JSON 结构：
         {{
             "job_title": "识别出的岗位名称",
+            "ats_keywords_must_have": ["必须包含的ATS硬核过筛关键词1", "关键词2", "关键词3", "关键词4"],
             "core_competencies": ["核心能力1", "能力2"],
-            "high_frequency_skills": ["技能1", "技能2"],
-            "resume_writing_tips": ["极具含金量的包装建议1", "建议2"],
+            "resume_writing_tips": ["针对ATS机器解析的排版与包装建议1", "建议2"],
             "interview_questions": ["可能被问的犀利面试题1", "问题2"]
         }}
         """

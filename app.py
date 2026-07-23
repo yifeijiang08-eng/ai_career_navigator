@@ -11,26 +11,19 @@ st.set_page_config(
 # ================= 极简高级浅绿色与白色 SaaS 风格 CSS 注入 =================
 st.markdown("""
 <style>
-    /* 全局背景与配色：采用高级柔和的浅绿色 #f4f8f6 与纯净白 */
     .stApp {
         background-color: #f4f8f6;
         color: #2c3e50;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    
-    /* 侧边栏美化 */
     section[data-testid="stSidebar"] {
         background-color: #eaf2ed;
         border-right: 1px solid #d5e5dc;
     }
-    
-    /* 所有标题颜色调整 */
     h1, h2, h3, h4 {
         color: #1b4332 !important;
         font-weight: 700;
     }
-    
-    /* 凸起卡片容器设计 (Neumorphism / Clean Raised Card) */
     .raised-card {
         background: #ffffff;
         padding: 22px;
@@ -44,8 +37,6 @@ st.markdown("""
         transform: translateY(-2px);
         box-shadow: 0 12px 28px rgba(44, 122, 92, 0.12);
     }
-    
-    /* 徽章 / 绿点样式 */
     .hiring-badge {
         display: inline-flex;
         align-items: center;
@@ -66,8 +57,6 @@ st.markdown("""
         margin-right: 6px;
         box-shadow: 0 0 6px #4caf50;
     }
-    
-    /* 统一样式优化 */
     .stTextInput input, .stTextArea textarea, .stSelectbox select {
         background-color: #ffffff !important;
         border: 1px solid #cce3d4 !important;
@@ -106,7 +95,7 @@ with st.sidebar:
             st.rerun()
             
     st.markdown("---")
-    st.info("💡 提示：所有模块已实现跨界联动。在生态树或全景导航中点击岗位即可直接跳转深度解析！")
+    st.info("💡 提示：所有模块已实现完美联动。点击任意岗位或公司，系统将精准同步对应数据！")
 
 # ================= 主页面逻辑渲染 =================
 page = st.session_state.current_page
@@ -141,7 +130,6 @@ if page == "行业全景导航":
         </div>
         """, unsafe_allow_html=True)
         
-        # 收集所有城市
         positions = res.get('positions', [])
         all_cities = set()
         for pos in positions:
@@ -170,20 +158,32 @@ if page == "行业全景导航":
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 指标展示
                 m1, m2, m3 = st.columns(3)
                 m1.metric("推荐指数", f"{pos.get('recommendation', {}).get('score', '90')}分")
                 m2.metric("求职难度", pos.get('difficulty', '中'))
                 m3.metric("市场需求", pos.get('market_demand', '旺盛'))
                 st.write(f"**核心商业场景**: {pos.get('business')}")
                 
-                # 联动按钮：点击直接跳转岗位深度解析
-                if st.button(f"🔍 深度解构【{p_title}】并查看面试考点", key=f"jump_pos_{p_title}"):
-                    st.session_state.target_position = p_title
-                    st.session_state.current_page = "岗位深度解析"
-                    st.rerun()
+                # 修复联动：精准传递当前点击的岗位名称
+                col_btn1, col_btn2 = st.columns(2)
+                with col_btn1:
+                    if st.button(f"🔍 深度解构【{p_title}】并查看面试考点", key=f"jump_pos_{p_title}", use_container_width=True):
+                        st.session_state.target_position = p_title
+                        st.session_state.current_page = "岗位深度解析"
+                        st.rerun()
+                with col_btn2:
+                    if st.button(f"🏢 查看【{p_title}】相关公司招聘情报", key=f"jump_comp_for_{p_title}", use_container_width=True):
+                        # 默认取该岗位下第一家大厂或公司作为目标公司带入情报站
+                        first_comp = "OpenAI"
+                        if pos.get('big_tech_companies'):
+                            first_comp = pos.get('big_tech_companies')[0].get('name')
+                        elif pos.get('boutique_companies'):
+                            first_comp = pos.get('boutique_companies')[0].get('name')
+                        st.session_state.target_company = first_comp
+                        st.session_state.target_position = p_title
+                        st.session_state.current_page = "公司情报站"
+                        st.rerun()
 
-                # 大厂 vs 小而美 分开展示
                 col_big, col_boutique = st.columns(2)
                 
                 with col_big:
@@ -193,17 +193,24 @@ if page == "行业全景导航":
                         st.caption("该城市暂无大厂直推记录。")
                     else:
                         for comp in big_comps:
+                            c_name = comp.get('name')
                             hiring_html = '<span class="hiring-badge"><span class="green-dot"></span>正在热招</span>' if comp.get('is_hiring', True) else ''
                             st.markdown(f"""
                             <div style="background: #f8faf9; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2ece6;">
-                                <div style="font-weight: 600; color: #1b4332;">{comp.get('name')} <span style="font-size:12px; color:#666;">({comp.get('city', '')})</span> {hiring_html}</div>
+                                <div style="font-weight: 600; color: #1b4332;">{c_name} <span style="font-size:12px; color:#666;">({comp.get('city', '')})</span> {hiring_html}</div>
                             </div>
                             """, unsafe_allow_html=True)
-                            bc1, bc2 = st.columns(2)
+                            
+                            bc1, bc2, bc3 = st.columns(3)
                             if comp.get('official_url'):
                                 bc1.link_button("🌐 官网", comp.get('official_url'), use_container_width=True)
                             if comp.get('linkedin_url'):
                                 bc2.link_button("🔗 LinkedIn", comp.get('linkedin_url'), use_container_width=True)
+                            if bc3.button("📋 查情报", key=f"btn_comp_{c_name}_{p_title}", use_container_width=True):
+                                st.session_state.target_company = c_name
+                                st.session_state.target_position = p_title
+                                st.session_state.current_page = "公司情报站"
+                                st.rerun()
 
                 with col_boutique:
                     st.markdown("#### 💎 小而美 / 高成长创新企业")
@@ -212,20 +219,27 @@ if page == "行业全景导航":
                         st.caption("该城市暂无小而美企业直推记录。")
                     else:
                         for comp in bout_comps:
+                            c_name = comp.get('name')
                             hiring_html = '<span class="hiring-badge"><span class="green-dot"></span>正在热招</span>' if comp.get('is_hiring', True) else ''
                             st.markdown(f"""
                             <div style="background: #f8faf9; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2ece6;">
-                                <div style="font-weight: 600; color: #1b4332;">{comp.get('name')} <span style="font-size:12px; color:#666;">({comp.get('city', '')})</span> {hiring_html}</div>
+                                <div style="font-weight: 600; color: #1b4332;">{c_name} <span style="font-size:12px; color:#666;">({comp.get('city', '')})</span> {hiring_html}</div>
                             </div>
                             """, unsafe_allow_html=True)
-                            cc1, cc2 = st.columns(2)
+                            
+                            cc1, cc2, cc3 = st.columns(3)
                             if comp.get('official_url'):
                                 cc1.link_button("🌐 官网", comp.get('official_url'), use_container_width=True)
                             if comp.get('linkedin_url'):
                                 cc2.link_button("🔗 LinkedIn", comp.get('linkedin_url'), use_container_width=True)
+                            if cc3.button("📋 查情报", key=f"btn_boutique_{c_name}_{p_title}", use_container_width=True):
+                                st.session_state.target_company = c_name
+                                st.session_state.target_position = p_title
+                                st.session_state.current_page = "公司情报站"
+                                st.rerun()
                 st.markdown("---")
 
-# ---------------- 2. 职业生态树 (支持点击直接跳转岗位解析) ----------------
+# ---------------- 2. 职业生态树 (精准传递选中岗位) ----------------
 elif page == "职业生态树":
     st.markdown("## 🌳 矩阵化职业生态树")
     st.markdown("<p style='color: #52796f;'>点击任意细分岗位卡片，系统将自动无缝跳转至该岗位的【深度解析】模块！</p>", unsafe_allow_html=True)
@@ -254,25 +268,25 @@ elif page == "职业生态树":
                     cols = st.columns(min(len(job_list), 3))
                     for idx, job in enumerate(job_list):
                         with cols[idx % len(cols)]:
-                            # 用凸起卡片包裹岗位，并提供跳转按钮
                             st.markdown(f"""
                             <div style="background: #ffffff; padding: 15px; border-radius: 10px; border-left: 5px solid #2d6a4f; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 10px;">
                                 <div style="font-weight: 600; color: #1b4332; margin-bottom: 8px;">🌿 {job}</div>
                             </div>
                             """, unsafe_allow_html=True)
-                            if st.button(f"🎯 深度解析此岗位", key=f"tree_jump_{category}_{idx}"):
+                            if st.button(f"🎯 深度解析此岗位", key=f"tree_jump_{category}_{idx}", use_container_width=True):
                                 st.session_state.target_position = job
                                 st.session_state.current_page = "岗位深度解析"
                                 st.rerun()
 
-# ---------------- 3. 岗位深度解析 (硬核、详细、多考点) ----------------
+# ---------------- 3. 岗位深度解析 ----------------
 elif page == "岗位深度解析":
     st.markdown("## 🎯 岗位深度硬核解析")
     
-    pos_name = st.text_input("请输入或确认要深度解构的岗位名称：", value=st.session_state.get("target_position", "大模型产品经理"))
+    default_pos = st.session_state.get("target_position", "大模型产品经理")
+    pos_name = st.text_input("请输入或确认要深度解构的岗位名称：", value=default_pos)
     
     if st.button("开始深度剖析与面试考点拆解", type="primary") or pos_name:
-        with st.spinner("AI 正在深度剖析该岗位的底层逻辑、技术栈与高频面试真题..."):
+        with st.spinner(f"AI 正在深度剖析【{pos_name}】的底层逻辑、技术栈与高频面试真题..."):
             res = ai.position_detail(pos_name)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -326,21 +340,28 @@ elif page == "岗位深度解析":
                         """, unsafe_allow_html=True)
                     st.markdown("</div>", unsafe_allow_html=True)
 
-                # 联动按钮：前往公司情报站查看该岗位在各大公司的招聘情况
+                # 联动按钮：跳转至公司情报站并带入当前岗位
                 if st.button(f"🏢 查看哪些公司正在热招【{pos_name}】", type="secondary"):
-                    st.session_state.target_company = "OpenAI"
+                    st.session_state.target_position = pos_name
                     st.session_state.current_page = "公司情报站"
                     st.rerun()
 
-# ---------------- 4. 公司情报站 (精确到每个职位的详细情报与联动) ----------------
+# ---------------- 4. 公司情报站 (精准响应用户选择的岗位和公司) ----------------
 elif page == "公司情报站":
     st.markdown("## 🏢 公司情报站与实时职位库")
     
-    company_name = st.text_input("请输入目标公司名称：", value=st.session_state.get("target_company", "OpenAI"))
+    default_comp = st.session_state.get("target_company", "OpenAI")
+    default_pos = st.session_state.get("target_position", "")
+    
+    col_c1, col_c2 = st.columns([2, 1])
+    with col_c1:
+        company_name = st.text_input("请输入目标公司名称：", value=default_comp)
+    with col_c2:
+        filter_pos = st.text_input("关联聚焦的岗位（可选）：", value=default_pos)
     
     if st.button("获取深度公司情报", type="primary") or company_name:
-        with st.spinner("AI 正在搜集该公司组织架构、薪酬福利及热招职位情报..."):
-            res = ai.company_detail(company_name)
+        with st.spinner(f"AI 正在搜集【{company_name}】针对【{filter_pos if filter_pos else '全岗位'}】的组织架构与招聘情报..."):
+            res = ai.company_detail(company_name, filter_pos)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
             else:
@@ -355,7 +376,7 @@ elif page == "公司情报站":
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.markdown("### 📋 该公司当前热招职位明细清单")
+                st.markdown(f"### 📋 {company_name} 当前热招职位明细清单")
                 open_pos = res.get('open_positions_with_details', [])
                 if not open_pos:
                     st.info("暂无具体的抓取职位明细。")
@@ -377,33 +398,38 @@ elif page == "公司情报站":
                             st.session_state.current_page = "岗位深度解析"
                             st.rerun()
 
-# ---------------- 5. JD 简历优化 ----------------
+# ---------------- 5. JD 简历优化 (专注 ATS 机器过筛) ----------------
 elif page == "JD 简历优化":
-    st.markdown("## 📝 JD 简历与面试优化")
-    st.markdown("<p style='color: #52796f;'>粘贴目标 JD，获取针对性的高频关键词、亮点包装建议及犀利面试题。</p>", unsafe_allow_html=True)
+    st.markdown("## 📝 ATS 简历机器过筛与优化")
+    st.markdown("<p style='color: #52796f;'>粘贴目标 JD，系统将自动逆向解析 ATS（Applicant Tracking System）机器筛选的硬核过筛关键词，助你第一步突破机审！</p>", unsafe_allow_html=True)
     
     jd_text = st.text_area("请粘贴目标岗位的 JD（招聘要求）原文：", height=200, placeholder="在此粘贴招聘 JD 原文...")
-    if st.button("开始深度诊断与优化", type="primary"):
+    if st.button("开始 ATS 机器过筛诊断", type="primary"):
         if not jd_text.strip():
             st.warning("请先输入有效的 JD 内容！")
         else:
-            with st.spinner("AI 正在逐字拆解 JD 并生成简历优化方案..."):
+            with st.spinner("AI 正在逆向拆解 ATS 机器过滤规则与高频硬核关键词..."):
                 res = ai.jd_analysis(jd_text)
                 if "error" in res:
                     st.error(f"调用出错: {res['error']}")
                 else:
-                    st.success("分析完成！")
+                    st.success("ATS 诊断完成！")
+                    
+                    # ATS 关键词展示区
                     st.markdown("""
-                    <div class="raised-card">
-                        <h3 style="color:#1b4332;">🔍 核心竞争力与高频关键词</h3>
+                    <div class="raised-card" style="border-left: 6px solid #2e7d32;">
+                        <h3 style="color:#1b4332; margin-top:0;">🛡️ ATS 机器过筛必须包含的硬核关键词</h3>
+                        <p style="color:#52796f; font-size:14px;">请确保以下高频关键词在你的简历中完整出现（建议原文原样匹配，避免机器解析失败）：</p>
                     """, unsafe_allow_html=True)
-                    skills_html = "".join([f"<span style='background:#d8f3dc; color:#1b4332; padding:4px 10px; border-radius:6px; margin-right:6px; display:inline-block; margin-bottom:6px; font-weight:600;'>{skill}</span>" for skill in res.get('high_frequency_skills', [])])
-                    st.markdown(skills_html, unsafe_allow_html=True)
+                    ats_keywords = res.get('ats_keywords_must_have', [])
+                    keywords_html = "".join([f"<span style='background:#d8f3dc; color:#1b4332; padding:6px 12px; border-radius:6px; margin-right:8px; display:inline-block; margin-bottom:8px; font-weight:600; border: 1px solid #b7e4c7;'>🔑 {kw}</span>" for kw in ats_keywords])
+                    st.markdown(keywords_html, unsafe_allow_html=True)
                     st.markdown("</div>", unsafe_allow_html=True)
                     
+                    # 简历包装建议区
                     st.markdown("""
                     <div class="raised-card">
-                        <h3 style="color:#1b4332;">📈 简历包装建议</h3>
+                        <h3 style="color:#1b4332;">📈 针对 ATS 系统的简历排版与包装建议</h3>
                     """, unsafe_allow_html=True)
                     for tip in res.get('resume_writing_tips', []):
                         st.markdown(f"- ✨ {tip}")
