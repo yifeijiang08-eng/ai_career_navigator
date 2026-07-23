@@ -4,24 +4,20 @@ from openai import OpenAI
 
 class AIService:
     def __init__(self):
-        # 从 Streamlit Secrets 中读取腾讯混元 API Key
         self.api_key = os.environ.get("HUNYUAN_API_KEY") or os.environ.get("TENCENT_API_KEY") or ""
-        self.base_url = "https://tokenhub.tencentmaas.com/v1" # 腾讯混元兼容 OpenAI 的 endpoint
+        self.base_url = "https://tokenhub.tencentmaas.com/v1"
         
         if not self.api_key:
             self.client = None
         else:
-            # 使用 OpenAI 客户端对接混元
             self.client = OpenAI(
                 api_key=self.api_key,
                 base_url=self.base_url
             )
             
-        # 腾讯混元主力大模型名称（可根据需要调整，如 hunyuan-pro 或 hunyuan-standard）
-        self.model_name = "Hy3"
+        self.model_name = "hy3"
 
     def _call_gemini_json(self, prompt: str) -> dict:
-        """调用腾讯混元并强制输出标准 JSON 格式"""
         if not self.client:
             return {"error": "未检测到有效的 HUNYUAN_API_KEY，请检查 Streamlit Cloud 的 Secrets 设置！"}
             
@@ -33,7 +29,7 @@ class AIService:
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
-                response_format={"type": "json_object"} # 强制 JSON 输出
+                response_format={"type": "json_object"}
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
@@ -54,13 +50,17 @@ class AIService:
                     "difficulty": "高/中/低",
                     "market_demand": "火爆/平稳",
                     "salary_level": "薪资范围",
-                    "business": "涉及的核心业务场景"
+                    "business": "涉及的核心业务场景",
+                    "companies": [
+                        {{
+                            "name": "公司名称",
+                            "city": "主要招聘城市（例如：柏林/慕尼黑/北京/上海等）",
+                            "official_url": "https://www.example.com",
+                            "linkedin_url": "https://www.linkedin.com/company/example"
+                        }}
+                    ]
                 }}
-            ],
-            "keywords": {{
-                "cn": ["中文搜索关键词1", "关键词2"],
-                "en": ["English Keyword 1", "Keyword 2"]
-            }}
+            ]
         }}
         """
         return self._call_gemini_json(prompt)
