@@ -25,7 +25,7 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "你是一个资深的全球 500 强企业人力资源总监（HRD）、技术合伙人兼顶级职业发展顾问。你精通 ATS 机器筛选机制与候选人包装，擅长将平淡的简历润色为极具说服力、量化成果且高大上的专业履历。必须输出严格的 JSON 格式数据。"},
+                    {"role": "system", "content": "你是一个资深的全球 500 强企业人力资源总监（HRD）、技术合伙人兼资深面试官。你精通 ATS 机器筛选、候选人履历深度对标、量化逻辑防穿帮以及面试行为学面试。必须输出严格的 JSON 格式数据。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -136,12 +136,12 @@ class AIService:
 
     def advanced_resume_analysis(self, position: str, company: str, location: str, jd_text: str, user_resume: str) -> dict:
         prompt = f"""
-        你是一位资深人力资源总监（HRD）兼顶级职业发展顾问。
-        用户目标岗位：【{position}】
+        你是一位资深人力资源总监（HRD）兼 hiring manager（招聘经理）。
+        目标岗位：【{position}】
         目标公司：【{company}】
         工作地点：【{location}】
         
-        请结合以下 JD 原文，以及用户上传的原始简历，进行全方位的深度对标、打分与高级润色。
+        请结合以下 JD 原文，以及用户上传的原始简历，进行全方位的深度对标、打分、高级润色以及面试官视角评估。
         
         JD 原文：
         {jd_text}
@@ -153,8 +153,7 @@ class AIService:
         {{
             "position_application_requirements": [
                 "针对该岗位、公司及地点的申请表必备材料/底层信息项1",
-                "必备材料2",
-                "合规或背景要求3"
+                "必备材料2"
             ],
             "jd_core_breakdown": {{
                 "core_responsibilities": ["核心职责拆解1", "职责2"],
@@ -170,19 +169,49 @@ class AIService:
                 "ats_friendliness": 78
             }},
             "hrd_consultant_review": "以 HRD 顾问身份给出的总体犀利点评与破局建议（150字左右）",
+            "hiring_manager_signals": {{
+                "strong_signals": [
+                    "招聘经理看到的第1个最强能力信号",
+                    "第2个强能力信号",
+                    "第3个强能力信号"
+                ],
+                "weak_signal": "招聘经理看到的防御红线或最弱能力信号（潜在短板）"
+            }},
             "matching_parts_to_highlight": [
                 "简历中与 JD 高度契合、需重点加粗/靠前排布的亮点1",
                 "亮点2"
             ],
             "insufficient_parts_to_supplement": [
-                "与 JD 相关但描述不够充分、需用户补充具体数据或场景的部分1",
-                "部分2"
+                "与 JD 相关但描述不够充分、需用户补充具体数据或场景的部分1"
             ],
             "enhanced_experience_bullets": [
                 {{
-                    "original_snippet": "原始工作经历中的平淡描述片段（例如：负责日常产品迭代和功能跟进）",
-                    "optimized_snippet": "润色后的话术（运用高级力量感动词，如：主导、驱动、赋能、重构，并使用量化指标包装。被修改的关键词请用 **[修改后关键词]** 格式高亮标注）",
-                    "reason_for_change": "这样修改的 HRD 视角解释与说服力说明"
+                    "original_snippet": "原始工作经历中的平淡描述片段",
+                    "optimized_snippet": "润色后的话术（运用高级力量感动词，如主导、驱动、赋能。修改的关键词用 **[修改后关键词]** 格式高亮标注）",
+                    "reason_for_change": "这样修改的 HRD 视角解释说服力说明",
+                    "quantified_side_note": "【旁侧批注：面试防穿帮】该数据或成果在面试中被追问时，应如何解释逻辑与推演过程"
+                }}
+            ],
+            "interviewer_hard_questions": [
+                {{
+                    "question": "面试官追问问题1（基于简历中的潜在漏洞或高阶成果）",
+                    "intent": "考察意图与解题思路指导"
+                }},
+                {{
+                    "question": "面试官追问问题2",
+                    "intent": "考察意图与解题思路指导"
+                }},
+                {{
+                    "question": "面试官追问问题3",
+                    "intent": "考察意图与解题思路指导"
+                }},
+                {{
+                    "question": "面试官追问问题4",
+                    "intent": "考察意图与解题思路指导"
+                }},
+                {{
+                    "question": "面试官追问问题5",
+                    "intent": "考察意图与解题思路指导"
                 }}
             ],
             "ats_keywords_must_have": ["ATS过筛必备核心关键词1", "关键词2", "关键词3"]

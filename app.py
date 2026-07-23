@@ -398,9 +398,8 @@ elif page == "公司情报站":
 # ---------------- 5. HRD 简历特训与高级优化 ----------------
 elif page == "JD 简历优化":
     st.markdown("## 📝 HRD 简历特训与全维度高分优化")
-    st.markdown("<p style='color: #52796f;'>请先选择你要申请的职位、公司及工作地点，系统将精准定位申请要求、拆解 JD、对照简历并给出多维打分与 HRD 级高级润色！</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color: #52796f;'>请先选择你要申请的职位、公司及工作地点，系统将精准定位申请要求、拆解 JD、对照简历并给出多维打分、HRD 级润色、量化旁侧批注及面试官追问！</p>", unsafe_allow_html=True)
     
-    # 步骤一：前置选择
     col_s1, col_s2, col_s3 = st.columns(3)
     with col_s1:
         target_pos_input = st.text_input("🎯 目标职位：", value=st.session_state.get("target_position", "大模型产品经理"))
@@ -412,20 +411,33 @@ elif page == "JD 简历优化":
     jd_text = st.text_area("📋 请粘贴目标岗位的 JD（招聘要求）原文：", height=150, placeholder="在此粘贴招聘 JD 原文...")
     user_resume = st.text_area("📄 请粘贴你目前的原始简历内容：", height=200, placeholder="在此粘贴你的工作经历、项目经历等原始简历文本...")
     
-    if st.button("🚀 开始 HRD 级深度对标与高级润色诊断", type="primary"):
+    if st.button("🚀 开始 HRD 级深度对标与面试全维特训", type="primary"):
         if not jd_text.strip() or not user_resume.strip():
             st.warning("请完整填写 JD 原文和你的原始简历内容！")
         else:
-            with st.spinner("资深 HRD 正在进行岗位申请表分析、六维指标打分、动词升级与高亮润色..."):
+            with st.spinner("资深 HRD 正在进行申请表分析、六维评分、量化批注、面试追问与能力信号评估..."):
                 res = ai.advanced_resume_analysis(target_pos_input, target_comp_input, target_loc_input, jd_text, user_resume)
                 if "error" in res:
                     st.error(f"调用出错: {res['error']}")
                 else:
-                    st.success("HRD 级简历诊断与高级润色完成！")
+                    st.success("HRD 级简历诊断与面试特训完成！")
                     
-                    # 1. 申请表要求与 JD 拆解
+                    # 1. 招聘经理信号灯评估
                     st.markdown("""
-                    <div class="raised-card" style="border-left: 6px solid #2d6a4f;">
+                    <div class="raised-card" style="border-left: 6px solid #2e7d32; background: #fafdfb;">
+                        <h3 style="color:#1b4332; margin-top:0;">🚦 招聘经理（Hiring Manager）第一印象信号灯</h3>
+                    """, unsafe_allow_html=True)
+                    hm_signals = res.get('hiring_manager_signals', {})
+                    st.write("**🟢 前三个最强能力信号：**")
+                    for sig in hm_signals.get('strong_signals', []):
+                        st.markdown(f"- ✅ {sig}")
+                    st.write("**🔴 最弱的能力信号 / 防御红线（需在面试中重点弥补）：**")
+                    st.markdown(f"- ⚠️ {hm_signals.get('weak_signal', '')}")
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+                    # 2. 申请表要求与 JD 拆解
+                    st.markdown("""
+                    <div class="raised-card">
                         <h3 style="color:#1b4332; margin-top:0;">📌 申请表必备材料与 JD 核心拆解</h3>
                     """, unsafe_allow_html=True)
                     st.write("**申请表/底层信息项预测：**")
@@ -439,7 +451,7 @@ elif page == "JD 简历优化":
                     st.markdown(f"- **经验要求：** {', '.join(core_bk.get('experience_requirements', []))}")
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-                    # 2. 六维评分面板
+                    # 3. 六维评分面板
                     st.markdown("""
                     <div class="raised-card">
                         <h3 style="color:#1b4332; margin-top:0;">📊 简历多维度综合评分面板</h3>
@@ -454,7 +466,7 @@ elif page == "JD 简历优化":
                     sc6.metric("ATS 友好度", f"{scores.get('ats_friendliness', 75)}分")
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-                    # 3. HRD 总监总体点评
+                    # 4. HRD 总监总体点评
                     st.markdown(f"""
                     <div class="raised-card" style="background: #f0f7f4;">
                         <h3 style="color:#1b4332; margin-top:0;">💡 HRD 顾问深度总评</h3>
@@ -462,7 +474,7 @@ elif page == "JD 简历优化":
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    # 4. 亮点强调 vs 补充不足
+                    # 5. 亮点强调 vs 补充不足
                     col_h1, col_h2 = st.columns(2)
                     with col_h1:
                         st.markdown("""
@@ -482,11 +494,11 @@ elif page == "JD 简历优化":
                             st.markdown(f"- 🟡 {item}")
                         st.markdown("</div>", unsafe_allow_html=True)
                         
-                    # 5. 工作经历 / 项目经验高级润色与高亮对照
+                    # 6. 工作经历 / 项目经验高级润色（含量化旁侧批注）
                     st.markdown("""
                     <div class="raised-card">
-                        <h3 style="color:#1b4332; margin-top:0;">✍️ 工作与项目经历 HRD 级高级润色对照（动词升级与量化）</h3>
-                        <p style="color: #52796f; font-size: 14px;">以下为你精准定位的经历片段。修改后的话术已将高级行动动词与量化成果升级，其中**加粗高亮**部分为你需要重点核对或微调的关键词：</p>
+                        <h3 style="color:#1b4332; margin-top:0;">✍️ 工作经历 HRD 级高级润色与量化防穿帮旁侧批注</h3>
+                        <p style="color: #52796f; font-size: 14px;">润色后话术已将动词升级并加入量化指标，下方附带<strong>面试官追问防穿帮批注</strong>：</p>
                     </div>
                     """, unsafe_allow_html=True)
                     
@@ -494,13 +506,30 @@ elif page == "JD 简历优化":
                         st.markdown(f"""
                         <div class="raised-card" style="background: #fcfdfc; border-left: 4px solid #40916c;">
                             <p style="color: #666; font-size: 13px; margin-bottom: 4px;"><strong>原话术片段 {idx}：</strong> {exp.get('original_snippet')}</p>
-                            <p style="color: #1b4332; font-size: 15px; font-weight: 600; margin-top: 8px;"><strong>🔥 HRD 润色后话术（高亮标注）：</strong></p>
+                            <p style="color: #1b4332; font-size: 15px; font-weight: 600; margin-top: 8px;"><strong>🔥 润色后话术（高亮标注）：</strong></p>
                             <p style="background: #e8f5e9; padding: 10px; border-radius: 6px; color: #2e7d32; font-size: 15px;">{exp.get('optimized_snippet')}</p>
                             <p style="color: #52796f; font-size: 13px; margin-top: 6px;"><strong>💡 顾问解析：</strong> {exp.get('reason_for_change')}</p>
+                            <p style="background: #fff8e1; padding: 10px; border-radius: 6px; color: #b78103; font-size: 13px; margin-top: 8px; border: 1px solid #ffe0b2;"><strong>🛡️ 量化指标旁侧批注（面试如何解释）：</strong> {exp.get('quantified_side_note')}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                    # 7. 面试官高频追问 5 题
+                    st.markdown("""
+                    <div class="raised-card" style="border-left: 6px solid #1b4332;">
+                        <h3 style="color:#1b4332; margin-top:0;">🎤 面试官视角：看完你简历后最可能追问的 5 个灵魂考题</h3>
+                        <p style="color: #52796f; font-size: 14px;">资深面试官在仔细审阅你的简历后，通常会针对这些潜在漏洞或亮点进行深挖：</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    for idx, q_item in enumerate(res.get('interviewer_hard_questions', []), 1):
+                        st.markdown(f"""
+                        <div style="background: #f0f7f4; padding: 14px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #c8e6c9;">
+                            <strong style="color: #1b4332; font-size: 15px;">追问 {idx}：{q_item.get('question')}</strong>
+                            <p style="color: #2d6a4f; font-size: 13px; margin: 6px 0 0 0;"><strong>🎯 考察意图与解题思路：</strong> {q_item.get('intent')}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         
-                    # 6. ATS 过筛关键词
+                    # 8. ATS 过筛关键词
                     st.markdown("""
                     <div class="raised-card" style="border-left: 6px solid #2e7d32;">
                         <h3 style="color:#1b4332; margin-top:0;">🛡️ ATS 机器过筛必须布局的核心关键词</h3>
