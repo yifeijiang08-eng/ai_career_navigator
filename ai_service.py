@@ -1,46 +1,47 @@
 import os
 import json
-from google import genai
-from google.genai import types
+from openai import OpenAI
 
 class AIService:
     def __init__(self):
-        # 从 Streamlit Secrets 或系统环境变量中安全读取 API Key
-        self.api_key = (
-            os.environ.get("GEMINI_API_KEY") or 
-            os.environ.get("GOOGLE_API_KEY") or 
-            ""
-        )
-        self.client = genai.Client(api_key=self.api_key)
-        self.model_name = "gemini-2.0-flash"
-        # 调试日志：可以在 Streamlit 后台看到是否成功读到了 Key
+        # 从 Streamlit Secrets 中读取腾讯混元 API Key
+        self.api_key = os.environ.get("HUNYUAN_API_KEY") or os.environ.get("TENCENT_API_KEY") or ""
+        self.base_url = "https://api.hunyuan.cloud.tencent.com/v1" # 腾讯混元兼容 OpenAI 的 endpoint
+        
         if not self.api_key:
-            print("❌ 警告：未检测到 GEMINI_API_KEY，请检查 Streamlit Secrets 设置！")
+            self.client = None
         else:
-            print("✅ 成功：已加载 Gemini API Key")
-
-        # 初始化 Google GenAI 客户端
-        self.client = genai.Client(api_key=self.api_key)
-        self.model_name = "gemini-2.0-flash"
+            # 使用 OpenAI 客户端对接混元
+            self.client = OpenAI(
+                api_key=self.api_key,
+                base_url=self.base_url
+            )
+            
+        # 腾讯混元主力大模型名称（可根据需要调整，如 hunyuan-pro 或 hunyuan-standard）
+        self.model_name = "Hy3"
 
     def _call_gemini_json(self, prompt: str) -> dict:
-        """通用私有方法：调用 Gemini 并强制输出标准 JSON 格式"""
+        """调用腾讯混元并强制输出标准 JSON 格式"""
+        if not self.client:
+            return {"error": "未检测到有效的 HUNYUAN_API_KEY，请检查 Streamlit Cloud 的 Secrets 设置！"}
+            
         try:
-            response = self.client.models.generate_content(
+            response = self.client.chat.completions.create(
                 model=self.model_name,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=0.7,
-                ),
+                messages=[
+                    {"role": "system", "content": "你是一个严谨的求职与职业规划专家，必须严格只输出符合要求的 JSON 格式，不要包含任何多余的markdown标记或前后缀说明。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                response_format={"type": "json_object"} # 强制 JSON 输出
             )
-            return json.loads(response.text)
+            return json.loads(response.choices[0].message.content)
         except Exception as e:
             return {"error": str(e)}
 
     def career_nav(self, industry: str) -> dict:
         prompt = f"""
-        你是一个顶级的职业规划与AI求职专家。请为【{industry}】这个行业生成一份详尽的求职全景导航。
+        请为【{industry}】这个行业生成一份详尽的求职全景导航。
         必须严格输出以下 JSON 结构：
         {{
             "industry": "{industry}",
@@ -67,7 +68,6 @@ class AIService:
     def explore_tree(self, industry: str) -> dict:
         prompt = f"""
         请为【{industry}】行业设计一个多维度的矩阵化职业生态树。
-        按不同的技术或业务方向分类（例如：研发类、产品类、运营类等）。
         必须严格输出 JSON 格式，形如：
         {{
             "研发与技术方向": ["岗位A", "岗位B"],
