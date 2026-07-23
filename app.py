@@ -23,11 +23,11 @@ tab_choice = st.sidebar.radio(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.info("💡 提示：请确保已在 Streamlit Cloud 后台的 Secrets 中正确配置了 `GEMINI_API_KEY`。")
+st.sidebar.info("💡 提示：请确保已在 Streamlit Cloud 后台的 Secrets 中正确配置了 `HUNYUAN_API_KEY`。")
 
 # 4. 主界面逻辑
 st.title("🧭 AI 职场与求职全景导航专家")
-st.markdown("基于 **Google Gemini 1.5 Flash** 驱动，为您提供全方位的求职与职业发展决策支持。")
+st.markdown("基于 **腾讯混元** 驱动，为您提供全方位的求职与职业发展决策支持。")
 st.markdown("---")
 
 # --- 模块一：行业全景导航 ---
