@@ -85,7 +85,7 @@ with st.sidebar:
         ("🌳 职业生态树", "职业生态树"),
         ("🎯 岗位深度解析", "岗位深度解析"),
         ("🏢 公司情报站", "公司情报站"),
-        ("📝 JD 简历优化", "JD 简历优化")
+        ("📝 HRD 简历特训与优化", "JD 简历优化")
     ]
     
     for label, page_key in nav_items:
@@ -164,7 +164,6 @@ if page == "行业全景导航":
                 m3.metric("市场需求", pos.get('market_demand', '旺盛'))
                 st.write(f"**核心商业场景**: {pos.get('business')}")
                 
-                # 修复联动：精准传递当前点击的岗位名称
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
                     if st.button(f"🔍 深度解构【{p_title}】并查看面试考点", key=f"jump_pos_{p_title}", use_container_width=True):
@@ -173,7 +172,6 @@ if page == "行业全景导航":
                         st.rerun()
                 with col_btn2:
                     if st.button(f"🏢 查看【{p_title}】相关公司招聘情报", key=f"jump_comp_for_{p_title}", use_container_width=True):
-                        # 默认取该岗位下第一家大厂或公司作为目标公司带入情报站
                         first_comp = "OpenAI"
                         if pos.get('big_tech_companies'):
                             first_comp = pos.get('big_tech_companies')[0].get('name')
@@ -239,7 +237,7 @@ if page == "行业全景导航":
                                 st.rerun()
                 st.markdown("---")
 
-# ---------------- 2. 职业生态树 (精准传递选中岗位) ----------------
+# ---------------- 2. 职业生态树 ----------------
 elif page == "职业生态树":
     st.markdown("## 🌳 矩阵化职业生态树")
     st.markdown("<p style='color: #52796f;'>点击任意细分岗位卡片，系统将自动无缝跳转至该岗位的【深度解析】模块！</p>", unsafe_allow_html=True)
@@ -340,13 +338,12 @@ elif page == "岗位深度解析":
                         """, unsafe_allow_html=True)
                     st.markdown("</div>", unsafe_allow_html=True)
 
-                # 联动按钮：跳转至公司情报站并带入当前岗位
                 if st.button(f"🏢 查看哪些公司正在热招【{pos_name}】", type="secondary"):
                     st.session_state.target_position = pos_name
                     st.session_state.current_page = "公司情报站"
                     st.rerun()
 
-# ---------------- 4. 公司情报站 (精准响应用户选择的岗位和公司) ----------------
+# ---------------- 4. 公司情报站 ----------------
 elif page == "公司情报站":
     st.markdown("## 🏢 公司情报站与实时职位库")
     
@@ -398,39 +395,117 @@ elif page == "公司情报站":
                             st.session_state.current_page = "岗位深度解析"
                             st.rerun()
 
-# ---------------- 5. JD 简历优化 (专注 ATS 机器过筛) ----------------
+# ---------------- 5. HRD 简历特训与高级优化 ----------------
 elif page == "JD 简历优化":
-    st.markdown("## 📝 ATS 简历机器过筛与优化")
-    st.markdown("<p style='color: #52796f;'>粘贴目标 JD，系统将自动逆向解析 ATS（Applicant Tracking System）机器筛选的硬核过筛关键词，助你第一步突破机审！</p>", unsafe_allow_html=True)
+    st.markdown("## 📝 HRD 简历特训与全维度高分优化")
+    st.markdown("<p style='color: #52796f;'>请先选择你要申请的职位、公司及工作地点，系统将精准定位申请要求、拆解 JD、对照简历并给出多维打分与 HRD 级高级润色！</p>", unsafe_allow_html=True)
     
-    jd_text = st.text_area("请粘贴目标岗位的 JD（招聘要求）原文：", height=200, placeholder="在此粘贴招聘 JD 原文...")
-    if st.button("开始 ATS 机器过筛诊断", type="primary"):
-        if not jd_text.strip():
-            st.warning("请先输入有效的 JD 内容！")
+    # 步骤一：前置选择
+    col_s1, col_s2, col_s3 = st.columns(3)
+    with col_s1:
+        target_pos_input = st.text_input("🎯 目标职位：", value=st.session_state.get("target_position", "大模型产品经理"))
+    with col_s2:
+        target_comp_input = st.text_input("🏢 目标公司：", value=st.session_state.get("target_company", "OpenAI"))
+    with col_s3:
+        target_loc_input = st.text_input("📍 工作地点：", value="旧金山 / 远程")
+        
+    jd_text = st.text_area("📋 请粘贴目标岗位的 JD（招聘要求）原文：", height=150, placeholder="在此粘贴招聘 JD 原文...")
+    user_resume = st.text_area("📄 请粘贴你目前的原始简历内容：", height=200, placeholder="在此粘贴你的工作经历、项目经历等原始简历文本...")
+    
+    if st.button("🚀 开始 HRD 级深度对标与高级润色诊断", type="primary"):
+        if not jd_text.strip() or not user_resume.strip():
+            st.warning("请完整填写 JD 原文和你的原始简历内容！")
         else:
-            with st.spinner("AI 正在逆向拆解 ATS 机器过滤规则与高频硬核关键词..."):
-                res = ai.jd_analysis(jd_text)
+            with st.spinner("资深 HRD 正在进行岗位申请表分析、六维指标打分、动词升级与高亮润色..."):
+                res = ai.advanced_resume_analysis(target_pos_input, target_comp_input, target_loc_input, jd_text, user_resume)
                 if "error" in res:
                     st.error(f"调用出错: {res['error']}")
                 else:
-                    st.success("ATS 诊断完成！")
+                    st.success("HRD 级简历诊断与高级润色完成！")
                     
-                    # ATS 关键词展示区
+                    # 1. 申请表要求与 JD 拆解
                     st.markdown("""
-                    <div class="raised-card" style="border-left: 6px solid #2e7d32;">
-                        <h3 style="color:#1b4332; margin-top:0;">🛡️ ATS 机器过筛必须包含的硬核关键词</h3>
-                        <p style="color:#52796f; font-size:14px;">请确保以下高频关键词在你的简历中完整出现（建议原文原样匹配，避免机器解析失败）：</p>
+                    <div class="raised-card" style="border-left: 6px solid #2d6a4f;">
+                        <h3 style="color:#1b4332; margin-top:0;">📌 申请表必备材料与 JD 核心拆解</h3>
                     """, unsafe_allow_html=True)
-                    ats_keywords = res.get('ats_keywords_must_have', [])
-                    keywords_html = "".join([f"<span style='background:#d8f3dc; color:#1b4332; padding:6px 12px; border-radius:6px; margin-right:8px; display:inline-block; margin-bottom:8px; font-weight:600; border: 1px solid #b7e4c7;'>🔑 {kw}</span>" for kw in ats_keywords])
-                    st.markdown(keywords_html, unsafe_allow_html=True)
+                    st.write("**申请表/底层信息项预测：**")
+                    for req in res.get('position_application_requirements', []):
+                        st.markdown(f"- 📋 {req}")
+                        
+                    st.write("**JD 核心要求：**")
+                    core_bk = res.get('jd_core_breakdown', {})
+                    st.markdown(f"- **核心职责：** {', '.join(core_bk.get('core_responsibilities', []))}")
+                    st.markdown(f"- **关键技能：** {', '.join(core_bk.get('key_skills', []))}")
+                    st.markdown(f"- **经验要求：** {', '.join(core_bk.get('experience_requirements', []))}")
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-                    # 简历包装建议区
+                    # 2. 六维评分面板
                     st.markdown("""
                     <div class="raised-card">
-                        <h3 style="color:#1b4332;">📈 针对 ATS 系统的简历排版与包装建议</h3>
+                        <h3 style="color:#1b4332; margin-top:0;">📊 简历多维度综合评分面板</h3>
                     """, unsafe_allow_html=True)
-                    for tip in res.get('resume_writing_tips', []):
-                        st.markdown(f"- ✨ {tip}")
+                    scores = res.get('scores', {})
+                    sc1, sc2, sc3, sc4, sc5, sc6 = st.columns(6)
+                    sc1.metric("JD 匹配度", f"{scores.get('jd_matching', 80)}分")
+                    sc2.metric("量化成果", f"{scores.get('quantified_achievements', 60)}分")
+                    sc3.metric("结构逻辑", f"{scores.get('structural_logic', 75)}分")
+                    sc4.metric("语言专业度", f"{scores.get('language_professionalism', 70)}分")
+                    sc5.metric("排版规范", f"{scores.get('formatting', 80)}分")
+                    sc6.metric("ATS 友好度", f"{scores.get('ats_friendliness', 75)}分")
+                    st.markdown("</div>", unsafe_allow_html=True)
+                    
+                    # 3. HRD 总监总体点评
+                    st.markdown(f"""
+                    <div class="raised-card" style="background: #f0f7f4;">
+                        <h3 style="color:#1b4332; margin-top:0;">💡 HRD 顾问深度总评</h3>
+                        <p style="font-size: 15px; color: #2d6a4f; line-height: 1.6;">{res.get('hrd_consultant_review', '')}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # 4. 亮点强调 vs 补充不足
+                    col_h1, col_h2 = st.columns(2)
+                    with col_h1:
+                        st.markdown("""
+                        <div class="raised-card">
+                            <h4 style="color:#1b4332;">✨ 高度匹配需重点强调的部分</h4>
+                        """, unsafe_allow_html=True)
+                        for item in res.get('matching_parts_to_highlight', []):
+                            st.markdown(f"- 🟢 {item}")
+                        st.markdown("</div>", unsafe_allow_html=True)
+                        
+                    with col_h2:
+                        st.markdown("""
+                        <div class="raised-card">
+                            <h4 style="color:#1b4332;">⚠️ 描述不足需补充完善的部分</h4>
+                        """, unsafe_allow_html=True)
+                        for item in res.get('insufficient_parts_to_supplement', []):
+                            st.markdown(f"- 🟡 {item}")
+                        st.markdown("</div>", unsafe_allow_html=True)
+                        
+                    # 5. 工作经历 / 项目经验高级润色与高亮对照
+                    st.markdown("""
+                    <div class="raised-card">
+                        <h3 style="color:#1b4332; margin-top:0;">✍️ 工作与项目经历 HRD 级高级润色对照（动词升级与量化）</h3>
+                        <p style="color: #52796f; font-size: 14px;">以下为你精准定位的经历片段。修改后的话术已将高级行动动词与量化成果升级，其中**加粗高亮**部分为你需要重点核对或微调的关键词：</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    for idx, exp in enumerate(res.get('enhanced_experience_bullets', []), 1):
+                        st.markdown(f"""
+                        <div class="raised-card" style="background: #fcfdfc; border-left: 4px solid #40916c;">
+                            <p style="color: #666; font-size: 13px; margin-bottom: 4px;"><strong>原话术片段 {idx}：</strong> {exp.get('original_snippet')}</p>
+                            <p style="color: #1b4332; font-size: 15px; font-weight: 600; margin-top: 8px;"><strong>🔥 HRD 润色后话术（高亮标注）：</strong></p>
+                            <p style="background: #e8f5e9; padding: 10px; border-radius: 6px; color: #2e7d32; font-size: 15px;">{exp.get('optimized_snippet')}</p>
+                            <p style="color: #52796f; font-size: 13px; margin-top: 6px;"><strong>💡 顾问解析：</strong> {exp.get('reason_for_change')}</p>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                    # 6. ATS 过筛关键词
+                    st.markdown("""
+                    <div class="raised-card" style="border-left: 6px solid #2e7d32;">
+                        <h3 style="color:#1b4332; margin-top:0;">🛡️ ATS 机器过筛必须布局的核心关键词</h3>
+                    """, unsafe_allow_html=True)
+                    ats_kw = res.get('ats_keywords_must_have', [])
+                    kw_html = "".join([f"<span style='background:#d8f3dc; color:#1b4332; padding:6px 12px; border-radius:6px; margin-right:8px; display:inline-block; margin-bottom:8px; font-weight:600; border: 1px solid #b7e4c7;'>🔑 {kw}</span>" for kw in ats_kw])
+                    st.markdown(kw_html, unsafe_allow_html=True)
                     st.markdown("</div>", unsafe_allow_html=True)

@@ -25,7 +25,7 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "你是一个资深的全球科技与人工智能行业猎头、ATS简历优化专家。你必须输出极度详尽、深度、包含真实 ATS 过筛机制与行业干货的 JSON 格式数据。严禁套话。"},
+                    {"role": "system", "content": "你是一个资深的全球 500 强企业人力资源总监（HRD）、技术合伙人兼顶级职业发展顾问。你精通 ATS 机器筛选机制与候选人包装，擅长将平淡的简历润色为极具说服力、量化成果且高大上的专业履历。必须输出严格的 JSON 格式数据。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -126,11 +126,6 @@ class AIService:
                     "position_title": "热招岗位名称1",
                     "department": "所属部门",
                     "requirements": "核心硬性要求"
-                }},
-                {{
-                    "position_title": "热招岗位名称2",
-                    "department": "所属部门",
-                    "requirements": "核心硬性要求"
                 }}
             ],
             "interview_experience": "面试风格、轮次与高频风格特点",
@@ -139,17 +134,58 @@ class AIService:
         """
         return self._call_gemini_json(prompt)
 
-    def jd_analysis(self, jd_text: str) -> dict:
+    def advanced_resume_analysis(self, position: str, company: str, location: str, jd_text: str, user_resume: str) -> dict:
         prompt = f"""
-        请深度分析以下招聘 JD 原文，重点针对 ATS（Applicant Tracking System，申请人跟踪系统）的机器筛选机制，给出过筛策略与关键词优化：
+        你是一位资深人力资源总监（HRD）兼顶级职业发展顾问。
+        用户目标岗位：【{position}】
+        目标公司：【{company}】
+        工作地点：【{location}】
+        
+        请结合以下 JD 原文，以及用户上传的原始简历，进行全方位的深度对标、打分与高级润色。
+        
+        JD 原文：
         {jd_text}
-        必须严格输出 JSON 结构：
+        
+        用户原始简历：
+        {user_resume}
+        
+        必须严格输出以下 JSON 结构：
         {{
-            "job_title": "识别出的岗位名称",
-            "ats_keywords_must_have": ["必须包含的ATS硬核过筛关键词1", "关键词2", "关键词3", "关键词4"],
-            "core_competencies": ["核心能力1", "能力2"],
-            "resume_writing_tips": ["针对ATS机器解析的排版与包装建议1", "建议2"],
-            "interview_questions": ["可能被问的犀利面试题1", "问题2"]
+            "position_application_requirements": [
+                "针对该岗位、公司及地点的申请表必备材料/底层信息项1",
+                "必备材料2",
+                "合规或背景要求3"
+            ],
+            "jd_core_breakdown": {{
+                "core_responsibilities": ["核心职责拆解1", "职责2"],
+                "key_skills": ["关键技能要求1", "技能2"],
+                "experience_requirements": ["经验硬性要求1", "经验2"]
+            }},
+            "scores": {{
+                "jd_matching": 85,
+                "quantified_achievements": 60,
+                "structural_logic": 75,
+                "language_professionalism": 70,
+                "formatting": 80,
+                "ats_friendliness": 78
+            }},
+            "hrd_consultant_review": "以 HRD 顾问身份给出的总体犀利点评与破局建议（150字左右）",
+            "matching_parts_to_highlight": [
+                "简历中与 JD 高度契合、需重点加粗/靠前排布的亮点1",
+                "亮点2"
+            ],
+            "insufficient_parts_to_supplement": [
+                "与 JD 相关但描述不够充分、需用户补充具体数据或场景的部分1",
+                "部分2"
+            ],
+            "enhanced_experience_bullets": [
+                {{
+                    "original_snippet": "原始工作经历中的平淡描述片段（例如：负责日常产品迭代和功能跟进）",
+                    "optimized_snippet": "润色后的话术（运用高级力量感动词，如：主导、驱动、赋能、重构，并使用量化指标包装。被修改的关键词请用 **[修改后关键词]** 格式高亮标注）",
+                    "reason_for_change": "这样修改的 HRD 视角解释与说服力说明"
+                }}
+            ],
+            "ats_keywords_must_have": ["ATS过筛必备核心关键词1", "关键词2", "关键词3"]
         }}
         """
         return self._call_gemini_json(prompt)
