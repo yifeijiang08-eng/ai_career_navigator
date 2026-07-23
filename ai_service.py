@@ -6,7 +6,7 @@ class AIService:
     def __init__(self):
         # 从 Streamlit Secrets 中读取腾讯混元 API Key
         self.api_key = os.environ.get("HUNYUAN_API_KEY") or os.environ.get("TENCENT_API_KEY") or ""
-        self.base_url = "https://api.hunyuan.cloud.tencent.com/v1" # 腾讯混元兼容 OpenAI 的 endpoint
+        self.base_url = "https://tokenhub.tencentmaas.com/v1" # 腾讯混元兼容 OpenAI 的 endpoint
         
         if not self.api_key:
             self.client = None
