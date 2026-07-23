@@ -25,7 +25,7 @@ class AIService:
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=[
-                    {"role": "system", "content": "你是一个资深的全球 500 强企业人力资源总监（HRD）、技术合伙人兼资深猎头。精通全球企业文化、组织架构、岗位性格匹配（MBTI）以及简历硬核对标。必须输出严格的 JSON 格式数据。"},
+                    {"role": "system", "content": "你是一个深谙应届生求职、校招、管培生培养及实习生晋升的资深校园招聘总监。请确保推荐岗位贴近刚毕业或在校生实际，且企业列表必须丰富（不少于5家）。必须输出严格的 JSON 格式数据。"},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -38,24 +38,40 @@ class AIService:
     def career_nav(self, industry: str, cross_skill: str = "") -> dict:
         cross_desc = f"，同时重点结合用户的跨界背景/技能【{cross_skill}】来挖掘独特的切入机会" if cross_skill else ""
         prompt = f"""
-        请为【{industry}】行业生成一份极其详尽、兼具宏观与微观的求职全景导航{cross_desc}。
+        请为【{industry}】行业生成一份面向【应届毕业生、实习生及管培生】的求职全景导航{cross_desc}。
+        注意：岗位必须贴近刚入门的职业情况（例如：管培生、初级研究员、助理产品经理、储备干部、实习生等）。
+        对于每个岗位，推荐的【公认大厂】与【小而美/高成长创新公司】加起来必须达到【5家以上】。
         必须严格输出以下 JSON 结构：
         {{
             "industry": "{industry}",
-            "overview": "行业发展现状、资本热度与未来3年趋势深度剖析（150字左右）",
+            "overview": "面向应届生/实习生的行业发展现状与入行机会剖析（150字左右）",
             "positions": [
                 {{
-                    "title": "具体岗位名称",
-                    "description": "极具深度的岗位职责与核心痛点剖析（100字以上）",
+                    "title": "具体入门岗位名称（如：XX管培生 / AI实习生 / 储备经理）",
+                    "description": "针对新人的岗位培养机制与职责解析（100字以上）",
                     "recommendation": {{"score": "95"}},
                     "difficulty": "高/中/低",
                     "market_demand": "火爆/平稳",
-                    "salary_level": "薪资范围（含期权/本地化薪资）",
-                    "business": "涉及的核心业务场景与商业化落地路径",
+                    "salary_level": "实习日薪或应届生校招年薪范围",
+                    "business": "涉及的核心业务场景与新人成长路径",
                     "big_tech_companies": [
                         {{
-                            "name": "公认大厂名称",
-                            "city": "城市（如 慕尼黑/柏林/北京/旧金山）",
+                            "name": "大厂名称1",
+                            "city": "城市",
+                            "is_hiring": true,
+                            "official_url": "https://www.example.com",
+                            "linkedin_url": "https://www.linkedin.com/company/example"
+                        }},
+                        {{
+                            "name": "大厂名称2",
+                            "city": "城市",
+                            "is_hiring": true,
+                            "official_url": "https://www.example.com",
+                            "linkedin_url": "https://www.linkedin.com/company/example"
+                        }},
+                        {{
+                            "name": "大厂名称3",
+                            "city": "城市",
                             "is_hiring": true,
                             "official_url": "https://www.example.com",
                             "linkedin_url": "https://www.linkedin.com/company/example"
@@ -63,7 +79,21 @@ class AIService:
                     ],
                     "boutique_companies": [
                         {{
-                            "name": "小而美/高成长创新公司名称",
+                            "name": "高成长/中型公司名称1",
+                            "city": "城市",
+                            "is_hiring": true,
+                            "official_url": "https://www.example.com",
+                            "linkedin_url": "https://www.linkedin.com/company/example"
+                        }},
+                        {{
+                            "name": "高成长/中型公司名称2",
+                            "city": "城市",
+                            "is_hiring": true,
+                            "official_url": "https://www.example.com",
+                            "linkedin_url": "https://www.linkedin.com/company/example"
+                        }},
+                        {{
+                            "name": "高成长/中型公司名称3",
                             "city": "城市",
                             "is_hiring": true,
                             "official_url": "https://www.example.com",
@@ -78,51 +108,51 @@ class AIService:
 
     def explore_tree(self, industry: str) -> dict:
         prompt = f"""
-        请为【{industry}】行业设计一个多维度、细颗粒度的矩阵化职业生态树，包含各个细分方向及其具体岗位。
+        请为【{industry}】行业设计一个面向应届生、实习生及管培生的多维度职业生态树。
         必须严格输出 JSON 格式，形如：
         {{
-            "核心研发与算法方向": ["大模型算法专家", "多模态研究员", "AI Infra 工程师"],
-            "产品与商业化方向": ["AI产品经理", "海外商业化总监", "解决方案架构师"],
-            "跨界融合与生态方向": ["AI伦理与合规专家", "小语种AI内容主编", "大模型数据运营专家"]
+            "管培生与综合储备方向": ["运营管培生", "产品管培生", "销售储备干部"],
+            "初级技术与研发方向": ["初级算法工程师(校招)", "AI开发实习生", "测试开发实习生"],
+            "初级商务与职能方向": ["海外运营实习生", "人力资源管培生", "数据分析助理"]
         }}
         """
         return self._call_gemini_json(prompt)
 
     def position_detail(self, position: str) -> dict:
         prompt = f"""
-        请对【{position}】这个岗位进行极度深度、干货满满的硬核解析。
+        请对【{position}】这个面向应届生/实习生的岗位进行深度硬核解析。
         必须严格输出以下 JSON 结构：
         {{
             "title": "{position}",
-            "overview": "该岗位在当前技术浪潮中的战略定位与核心价值",
-            "salary_range": "全球/国内薪资水平评估",
-            "growth_path": "从初级到架构师/总监的完整晋升成长路径",
-            "responsibilities": ["硬核职责1（含具体工作目标）", "职责2", "职责3"],
+            "overview": "该岗位对职场新人的价值与培养体系剖析",
+            "salary_range": "校招薪资/实习生薪资水平评估",
+            "growth_path": "从新人到独当一面的完整晋升路线",
+            "responsibilities": ["核心基础职责1", "职责2", "职责3"],
             "workflow": ["日常工作步骤1", "步骤2", "步骤3"],
-            "tech_stack": ["必备硬技能1", "技能2", "技能3"],
+            "tech_stack": ["必备基础技能1", "技能2", "技能3"],
             "communication_and_mbti": [
-                "性格沟通特点要求1",
-                "MBTI 倾向建议（例如：更适合 E人 还是 I人，原因说明）"
+                "新人性格沟通特点要求",
+                "MBTI 倾向建议（例如：该岗位更适合 E人 还是 I人，各有什么优势与挑战）"
             ],
-            "recommended_projects": ["具备行业含金量的实战练手项目1", "项目2"],
+            "recommended_projects": ["适合写在简历上的校园/实战项目1", "项目2"],
             "interview_tips": [
-                "高频硬核面试考点1（附解题思路/考察意图）",
-                "高频硬核面试考点2",
-                "高频硬核面试考点3"
+                "校招/实习高频面试考点1（附应对技巧）",
+                "高频面试考点2",
+                "高频面试考点3"
             ]
         }}
         """
         return self._call_gemini_json(prompt)
 
     def company_detail(self, company: str, target_position: str = "") -> dict:
-        pos_filter = f"，并重点展示或匹配【{target_position}】该岗位的招聘与业务需求" if target_position else ""
+        pos_filter = f"，并重点展示针对【{target_position}】的校招、管培生或实习生项目" if target_position else ""
         prompt = f"""
-        请提供【{company}】这家公司的深度求职情报{pos_filter}。
+        请提供【{company}】这家公司针对应届生、管培生及实习生的求职情报{pos_filter}。
         必须严格输出 JSON 结构：
         {{
             "name": "{company}",
-            "intro": "公司背景、核心技术壁垒与团队规模",
-            "salary_benefits": "薪资结构、期权政策与福利特点",
+            "intro": "公司背景、校招培养体系与新人氛围",
+            "salary_benefits": "校招薪资、实习补贴、住房补贴与基础福利",
             "cities": ["主要办公城市1", "城市2"],
             "company_scores": {{
                 "internal_environment": 88,
@@ -132,25 +162,25 @@ class AIService:
             }},
             "open_positions_with_details": [
                 {{
-                    "position_title": "热招岗位名称1",
-                    "department": "所属部门",
-                    "requirements": "核心硬性要求"
+                    "position_title": "校招/实习岗位名称1",
+                    "department": "所属部门/管培生轮岗部门",
+                    "requirements": "对应届生/实习生的基础要求"
                 }}
             ],
-            "interview_experience": "面试风格、轮次与高频风格特点",
-            "employee_review": "真实工作体验与发展评价"
+            "interview_experience": "校招面试风格、群面(AC面)特点与轮次",
+            "employee_review": "往届管培生或实习生的真实工作体验与成长评价"
         }}
         """
         return self._call_gemini_json(prompt)
 
     def advanced_resume_analysis(self, position: str, company: str, location: str, jd_text: str, user_resume: str) -> dict:
         prompt = f"""
-        你是一位资深人力资源总监（HRD）兼 hiring manager（招聘经理）。
-        目标岗位：【{position}】
+        你是一位资深校园招聘总监兼校招面试官。
+        目标岗位：【{position}】（面向应届生/实习生/管培生）
         目标公司：【{company}】
         工作地点：【{location}】
         
-        请结合以下 JD 原文，以及用户上传的原始简历，进行全方位的深度对标、打分、高级润色以及面试官视角评估。
+        请结合以下 JD 原文，以及用户上传的原始简历（通常为在校生或应届生简历），进行全方位的深度对标、打分、高级润色以及面试官视角评估。
         
         JD 原文：
         {jd_text}
@@ -161,13 +191,13 @@ class AIService:
         必须严格输出以下 JSON 结构：
         {{
             "position_application_requirements": [
-                "针对该岗位、公司及地点的申请表必备材料/底层信息项1",
+                "针对该校招/实习岗位的网申必备材料项1",
                 "必备材料2"
             ],
             "jd_core_breakdown": {{
                 "core_responsibilities": ["核心职责拆解1", "职责2"],
                 "key_skills": ["关键技能要求1", "技能2"],
-                "experience_requirements": ["经验硬性要求1", "经验2"]
+                "experience_requirements": ["校园经历/实习硬性要求1", "经验2"]
             }},
             "scores": {{
                 "jd_matching": 85,
@@ -177,33 +207,33 @@ class AIService:
                 "formatting": 80,
                 "ats_friendliness": 78
             }},
-            "hrd_consultant_review": "以 HRD 顾问身份给出的总体犀利点评与破局建议（150字左右）",
+            "hrd_consultant_review": "以校招专家身份给出的总体犀利点评与破局建议（150字左右）",
             "hiring_manager_signals": {{
                 "strong_signals": [
-                    "招聘经理看到的第1个最强能力信号",
-                    "第2个强能力信号",
-                    "第3个强能力信号"
+                    "校招面试官看到的第1个潜力信号",
+                    "第2个潜力信号",
+                    "第3个潜力信号"
                 ],
-                "weak_signal": "招聘经理看到的防御红线或最弱能力信号（潜在短板）"
+                "weak_signal": "校招面试官看到的防御红线或最弱能力信号（如缺乏相关项目或实习经验）"
             }},
             "matching_parts_to_highlight": [
-                "简历中与 JD 高度契合、需重点加粗/靠前排布的亮点1",
+                "简历中与校招 JD 高度契合的校园经历/比赛/干部经历1",
                 "亮点2"
             ],
             "insufficient_parts_to_supplement": [
-                "与 JD 相关但描述不够充分、需用户补充具体数据或场景的部分1"
+                "描述不够充分、需补充具体数据或校园成果的部分1"
             ],
             "enhanced_experience_bullets": [
                 {{
-                    "original_snippet": "原始工作经历中的平淡描述片段",
-                    "optimized_snippet": "润色后的话术（运用高级力量感动词，如主导、驱动、赋能。修改的关键词用 **[修改后关键词]** 格式高亮标注）",
-                    "reason_for_change": "这样修改的 HRD 视角解释说服力说明",
-                    "quantified_side_note": "【旁侧批注：面试防穿帮】该数据或成果在面试中被追问时，应如何解释逻辑与推演过程"
+                    "original_snippet": "原始校园经历或实习中的平淡描述片段",
+                    "optimized_snippet": "润色后话术（运用高级力量感校招动词。修改的关键词用 **[修改后关键词]** 格式高亮标注）",
+                    "reason_for_change": "这样修改的校招专家视角解释说服力说明",
+                    "quantified_side_note": "【旁侧批注：面试防穿帮】该校园成果在群面或单面被追问时，应如何解释逻辑与推演过程"
                 }}
             ],
             "interviewer_hard_questions": [
                 {{
-                    "question": "面试官追问问题1（基于简历中的潜在漏洞或高阶成果）",
+                    "question": "校招/实习面试官追问问题1（基于应届生简历）",
                     "intent": "考察意图与解题思路指导"
                 }},
                 {{
@@ -223,7 +253,7 @@ class AIService:
                     "intent": "考察意图与解题思路指导"
                 }}
             ],
-            "ats_keywords_must_have": ["ATS过筛必备核心关键词1", "关键词2", "关键词3"]
+            "ats_keywords_must_have": ["校招ATS过筛必备核心关键词1", "关键词2", "关键词3"]
         }}
         """
         return self._call_gemini_json(prompt)

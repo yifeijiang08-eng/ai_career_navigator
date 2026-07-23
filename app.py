@@ -3,7 +3,7 @@ from ai_service import AIService
 
 # 页面基本配置
 st.set_page_config(
-    page_title="AI 职场与求职全景导航",
+    page_title="AI 职场与求职全景导航（校招/实习/管培专版）",
     page_icon="🧭",
     layout="wide"
 )
@@ -71,21 +71,21 @@ ai = AIService()
 if "current_page" not in st.session_state:
     st.session_state.current_page = "行业全景导航"
 if "target_position" not in st.session_state:
-    st.session_state.target_position = "大模型产品经理"
+    st.session_state.target_position = "AI产品管培生"
 if "target_company" not in st.session_state:
-    st.session_state.target_company = "微软 (Microsoft)"
+    st.session_state.target_company = "腾讯 (Tencent)"
 
 # ================= 侧边栏导航菜单 =================
 with st.sidebar:
-    st.markdown("### 🧭 导航菜单")
-    st.markdown("<p style='font-size: 13px; color: #52796f;'>多维联动求职系统</p>", unsafe_allow_html=True)
+    st.markdown("### 🧭 校招与实习导航")
+    st.markdown("<p style='font-size: 13px; color: #52796f;'>专为应届生及管培生打造</p>", unsafe_allow_html=True)
     
     nav_items = [
-        ("📈 行业全景导航", "行业全景导航"),
-        ("🌳 职业生态树", "职业生态树"),
-        ("🎯 岗位深度解析", "岗位深度解析"),
-        ("🏢 公司情报站", "公司情报站"),
-        ("📝 HRD 简历特训与优化", "JD 简历优化")
+        ("📈 行业求职全景导航", "行业全景导航"),
+        ("🌳 职业生态树(校招版)", "职业生态树"),
+        ("🎯 岗位深度解析与MBTI", "岗位深度解析"),
+        ("🏢 公司情报站与评分", "公司情报站"),
+        ("📝 校招/实习简历特训", "JD 简历优化")
     ]
     
     for label, page_key in nav_items:
@@ -95,24 +95,24 @@ with st.sidebar:
             st.rerun()
             
     st.markdown("---")
-    st.info("💡 提示：所有模块已实现完美联动。点击任意岗位或公司，系统将精准同步对应数据！")
+    st.info("💡 提示：系统已全面下沉至校招、实习生及管培生赛道，每组岗位均提供 5 家以上优质名企直推！")
 
 # ================= 主页面逻辑渲染 =================
 page = st.session_state.current_page
 
 # ---------------- 1. 行业全景导航 ----------------
 if page == "行业全景导航":
-    st.markdown("## 📈 行业求职全景导航")
-    st.markdown("<p style='color: #52796f;'>支持结合跨界背景（如小语种、金融、法律等）深度挖掘 AI 行业切入点。</p>", unsafe_allow_html=True)
+    st.markdown("## 📈 行业求职全景导航（应届生/管培生专版）")
+    st.markdown("<p style='color: #52796f;'>聚焦校招、管培生及实习岗位，为您一网打尽 5 家以上优质名企与高成长创新公司。</p>", unsafe_allow_html=True)
     
     col_i1, col_i2 = st.columns([2, 1])
     with col_i1:
-        industry = st.text_input("请输入目标行业：", "人工智能 / 大模型")
+        industry = st.text_input("请输入目标行业：", "人工智能 / 互联网 / 大模型")
     with col_i2:
-        cross_skill = st.text_input("跨界背景/附加技能（可选）：", "小语种 / 语言学背景")
+        cross_skill = st.text_input("专业背景/校园经历（可选）：", "计算机 / 经管 / 语言类背景")
         
-    if st.button("生成行业全景与企业猎头库", type="primary"):
-        with st.spinner("AI 正在深度绘制行业全景图谱，甄选大厂及小而美高成长企业..."):
+    if st.button("生成校招全景与 5+ 名企猎头库", type="primary"):
+        with st.spinner("AI 正在深度挖掘校招全景，打包整理 5 家以上大厂及高成长企业..."):
             res = ai.career_nav(industry, cross_skill)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -125,7 +125,7 @@ if page == "行业全景导航":
         
         st.markdown(f"""
         <div class="raised-card">
-            <h3 style="margin-top:0; color:#1b4332;">🌐 {res.get('industry', industry)} - 行业全景综述</h3>
+            <h3 style="margin-top:0; color:#1b4332;">🌐 {res.get('industry', industry)} - 校招/实习全景综述</h3>
             <p style="font-size: 15px; line-height: 1.6; color: #2d6a4f;">{res.get('overview', '')}</p>
         </div>
         """, unsafe_allow_html=True)
@@ -142,7 +142,7 @@ if page == "行业全景导航":
             city_list = ["全部城市"] + sorted(list(all_cities))
             selected_city = st.selectbox("📍 按工作城市过滤招聘企业：", city_list)
 
-        st.markdown("### 💼 核心岗位矩阵与企业直推清单")
+        st.markdown("### 💼 核心入门岗位与 5+ 名企直推清单")
         for pos in positions:
             p_title = pos.get('title')
             with st.container():
@@ -151,10 +151,10 @@ if page == "行业全景导航":
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h3 style="margin: 0; color: #1b4332;">📌 {p_title}</h3>
                         <span style="background: #d8f3dc; color: #2d6a4f; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 13px;">
-                            薪资: {pos.get('salary_level', '面议')}
+                            薪资/补贴: {pos.get('salary_level', '面议')}
                         </span>
                     </div>
-                    <p style="margin-top: 10px; color: #40916c; font-size: 14px;"><strong>岗位职责与痛点：</strong>{pos.get('description')}</p>
+                    <p style="margin-top: 10px; color: #40916c; font-size: 14px;"><strong>培养机制与职责：</strong>{pos.get('description')}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -162,17 +162,17 @@ if page == "行业全景导航":
                 m1.metric("推荐指数", f"{pos.get('recommendation', {}).get('score', '90')}分")
                 m2.metric("求职难度", pos.get('difficulty', '中'))
                 m3.metric("市场需求", pos.get('market_demand', '旺盛'))
-                st.write(f"**核心商业场景**: {pos.get('business')}")
+                st.write(f"**核心业务与成长路径**: {pos.get('business')}")
                 
                 col_btn1, col_btn2 = st.columns(2)
                 with col_btn1:
-                    if st.button(f"🔍 深度解构【{p_title}】并查看面试考点", key=f"jump_pos_{p_title}", use_container_width=True):
+                    if st.button(f"🔍 深度解构【{p_title}】及 MBTI 性格匹配", key=f"jump_pos_{p_title}", use_container_width=True):
                         st.session_state.target_position = p_title
                         st.session_state.current_page = "岗位深度解析"
                         st.rerun()
                 with col_btn2:
-                    if st.button(f"🏢 查看【{p_title}】相关公司招聘情报", key=f"jump_comp_for_{p_title}", use_container_width=True):
-                        first_comp = "微软 (Microsoft)"
+                    if st.button(f"🏢 查看【{p_title}】相关公司多维评分与情报", key=f"jump_comp_for_{p_title}", use_container_width=True):
+                        first_comp = "腾讯 (Tencent)"
                         if pos.get('big_tech_companies'):
                             first_comp = pos.get('big_tech_companies')[0].get('name')
                         elif pos.get('boutique_companies'):
@@ -185,14 +185,14 @@ if page == "行业全景导航":
                 col_big, col_boutique = st.columns(2)
                 
                 with col_big:
-                    st.markdown("#### 🏛️ 公认行业大厂")
+                    st.markdown("#### 🏛️ 公认行业大厂（校招/管培主阵地）")
                     big_comps = [c for c in pos.get('big_tech_companies', []) if selected_city == "全部城市" or c.get('city') == selected_city]
                     if not big_comps:
                         st.caption("该城市暂无大厂直推记录。")
                     else:
                         for comp in big_comps:
                             c_name = comp.get('name')
-                            hiring_html = '<span class="hiring-badge"><span class="green-dot"></span>正在热招</span>' if comp.get('is_hiring', True) else ''
+                            hiring_html = '<span class="hiring-badge"><span class="green-dot"></span>校招/实习热招</span>' if comp.get('is_hiring', True) else ''
                             st.markdown(f"""
                             <div style="background: #f8faf9; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2ece6;">
                                 <div style="font-weight: 600; color: #1b4332;">{c_name} <span style="font-size:12px; color:#666;">({comp.get('city', '')})</span> {hiring_html}</div>
@@ -211,14 +211,14 @@ if page == "行业全景导航":
                                 st.rerun()
 
                 with col_boutique:
-                    st.markdown("#### 💎 小而美 / 高成长创新企业")
+                    st.markdown("#### 💎 高成长创新/中型企业（极速成长）")
                     bout_comps = [c for c in pos.get('boutique_companies', []) if selected_city == "全部城市" or c.get('city') == selected_city]
                     if not bout_comps:
-                        st.caption("该城市暂无小而美企业直推记录。")
+                        st.caption("该城市暂无创新企业直推记录。")
                     else:
                         for comp in bout_comps:
                             c_name = comp.get('name')
-                            hiring_html = '<span class="hiring-badge"><span class="green-dot"></span>正在热招</span>' if comp.get('is_hiring', True) else ''
+                            hiring_html = '<span class="hiring-badge"><span class="green-dot"></span>校招/实习热招</span>' if comp.get('is_hiring', True) else ''
                             st.markdown(f"""
                             <div style="background: #f8faf9; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2ece6;">
                                 <div style="font-weight: 600; color: #1b4332;">{c_name} <span style="font-size:12px; color:#666;">({comp.get('city', '')})</span> {hiring_html}</div>
@@ -239,12 +239,12 @@ if page == "行业全景导航":
 
 # ---------------- 2. 职业生态树 ----------------
 elif page == "职业生态树":
-    st.markdown("## 🌳 矩阵化职业生态树")
-    st.markdown("<p style='color: #52796f;'>点击任意细分岗位卡片，系统将自动无缝跳转至该岗位的【深度解析】模块！</p>", unsafe_allow_html=True)
+    st.markdown("## 🌳 校招与管培生矩阵生态树")
+    st.markdown("<p style='color: #52796f;'>点击任意入门岗位卡片，系统将无缝跳转至该岗位的【深度解析】模块！</p>", unsafe_allow_html=True)
     
-    industry = st.text_input("请输入要解构的行业生态：", "人工智能与大模型产业")
+    industry = st.text_input("请输入要解构的行业生态：", "人工智能与互联网产业")
     if st.button("构建生态树", type="primary"):
-        with st.spinner("AI 正在构建多维职业生态树..."):
+        with st.spinner("AI 正在构建校招/管培多维职业生态树..."):
             res = ai.explore_tree(industry)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -278,13 +278,13 @@ elif page == "职业生态树":
 
 # ---------------- 3. 岗位深度解析 ----------------
 elif page == "岗位深度解析":
-    st.markdown("## 🎯 岗位深度硬核解析与性格匹配（MBTI/E-I人）")
+    st.markdown("## 🎯 岗位深度解析与 MBTI（E人/I人）性格匹配")
     
-    default_pos = st.session_state.get("target_position", "大模型产品经理")
+    default_pos = st.session_state.get("target_position", "AI产品管培生")
     pos_name = st.text_input("请输入或确认要深度解构的岗位名称：", value=default_pos)
     
     if st.button("开始深度剖析与性格特点拆解", type="primary") or pos_name:
-        with st.spinner(f"AI 正在深度剖析【{pos_name}】的技术栈、日常工作流与 MBTI 性格匹配倾向..."):
+        with st.spinner(f"AI 正在深度剖析【{pos_name}】的技能要求、日常工作流与 MBTI 性格倾向（E人/I人优势）..."):
             res = ai.position_detail(pos_name)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -295,7 +295,7 @@ elif page == "岗位深度解析":
                     <h2 style="color: #1b4332; margin-top:0;">📋 岗位：{res.get('title', pos_name)}</h2>
                     <p style="font-size: 16px; color: #2d6a4f; font-weight: 500;">{res.get('overview', '')}</p>
                     <p><strong>💰 薪资评估：</strong>{res.get('salary_range', '')}</p>
-                    <p><strong>📈 晋升成长路径：</strong>{res.get('growth_path', '')}</p>
+                    <p><strong>📈 成长路径：</strong>{res.get('growth_path', '')}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
@@ -303,7 +303,7 @@ elif page == "岗位深度解析":
                 with col_d1:
                     st.markdown("""
                     <div class="raised-card">
-                        <h4 style="color:#1b4332;">🛠️ 核心硬技能栈</h4>
+                        <h4 style="color:#1b4332;">🛠️ 必备基础技能栈</h4>
                     """, unsafe_allow_html=True)
                     for tech in res.get('tech_stack', []):
                         st.markdown(f"- ✅ {tech}")
@@ -311,7 +311,7 @@ elif page == "岗位深度解析":
                     
                     st.markdown("""
                     <div class="raised-card">
-                        <h4 style="color:#1b4332;">👥 沟通特点与 MBTI 性格倾向（E人/I人适配）</h4>
+                        <h4 style="color:#1b4332;">👥 沟通特点与 MBTI 性格匹配（E人 vs I人）</h4>
                     """, unsafe_allow_html=True)
                     for comm in res.get('communication_and_mbti', []):
                         st.markdown(f"- 💡 {comm}")
@@ -320,7 +320,7 @@ elif page == "岗位深度解析":
                 with col_d2:
                     st.markdown("""
                     <div class="raised-card">
-                        <h4 style="color:#1b4332;">🚀 核心职责拆解</h4>
+                        <h4 style="color:#1b4332;">🚀 基础职责与培养要求</h4>
                     """, unsafe_allow_html=True)
                     for resp in res.get('responsibilities', []):
                         st.markdown(f"- 🔹 {resp}")
@@ -328,7 +328,7 @@ elif page == "岗位深度解析":
 
                     st.markdown("""
                     <div class="raised-card">
-                        <h4 style="color:#1b4332;">💡 高频硬核面试考点与解题思路</h4>
+                        <h4 style="color:#1b4332;">💡 校招高频面试考点与解题思路</h4>
                     """, unsafe_allow_html=True)
                     for idx, tip in enumerate(res.get('interview_tips', []), 1):
                         st.markdown(f"""
@@ -345,11 +345,10 @@ elif page == "岗位深度解析":
 
 # ---------------- 4. 公司情报站 ----------------
 elif page == "公司情报站":
-    st.markdown("## 🏢 公司情报站与多维评分雷达（环境、福利、加班、假期）")
+    st.markdown("## 🏢 公司情报站与多维体验打分（环境、福利、加班、假期）")
     
-    # 彻底修复：使用独立的 Session State 变量，防止输入框死锁在固定值
     if "input_company_name" not in st.session_state:
-        st.session_state.input_company_name = st.session_state.get("target_company", "微软 (Microsoft)")
+        st.session_state.input_company_name = st.session_state.get("target_company", "腾讯 (Tencent)")
     
     col_c1, col_c2 = st.columns([2, 1])
     with col_c1:
@@ -357,8 +356,8 @@ elif page == "公司情报站":
     with col_c2:
         filter_pos = st.text_input("关联聚焦的岗位（可选）：", value=st.session_state.get("target_position", ""))
     
-    if st.button("获取深度公司情报与多维评分", type="primary") or company_name:
-        with st.spinner(f"AI 正在独立搜集【{company_name}】针对【{filter_pos if filter_pos else '全岗位'}】的真实环境、福利及热招职位..."):
+    if st.button("获取多维评分与校招情报", type="primary") or company_name:
+        with st.spinner(f"AI 正在独立搜集【{company_name}】针对新人的办公环境、福利、加班、假期及校招岗位情报..."):
             res = ai.company_detail(company_name, filter_pos)
             if "error" in res:
                 st.error(f"调用出错: {res['error']}")
@@ -368,26 +367,26 @@ elif page == "公司情报站":
                 <div class="raised-card">
                     <h2 style="color: #1b4332; margin-top:0;">🏢 {res.get('name', company_name)}</h2>
                     <p style="font-size: 15px; color: #2d6a4f;">{res.get('intro', '')}</p>
-                    <p><strong>💰 薪资福利与期权：</strong>{res.get('salary_benefits', '')}</p>
-                    <p><strong>🎯 面试风格与轮次：</strong>{res.get('interview_experience', '')}</p>
-                    <p><strong>💬 员工真实评价：</strong>{res.get('employee_review', '')}</p>
+                    <p><strong>💰 校招薪资与福利：</strong>{res.get('salary_benefits', '')}</p>
+                    <p><strong>🎯 面试风格与群面特点：</strong>{res.get('interview_experience', '')}</p>
+                    <p><strong>💬 往届生真实评价：</strong>{res.get('employee_review', '')}</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # 公司多维评分面板
+                # 公司多维评分面板（环境、福利、加班、假期）
                 st.markdown("""
                 <div class="raised-card" style="background: #fafdfb;">
-                    <h3 style="color:#1b4332; margin-top:0;">📊 公司多维体验综合评分面板</h3>
+                    <h3 style="color:#1b4332; margin-top:0;">📊 公司内部环境与体验多维打分（满分 100）</h3>
                 """, unsafe_allow_html=True)
                 c_scores = res.get('company_scores', {})
                 cs1, cs2, cs3, cs4 = st.columns(4)
-                cs1.metric("内部办公环境", f"{c_scores.get('internal_environment', 85)}分")
-                cs2.metric("薪酬福利水平", f"{c_scores.get('benefits_score', 88)}分")
+                cs1.metric("内部办公环境", f"{c_scores.get('internal_environment', 88)}分")
+                cs2.metric("薪酬福利水平", f"{c_scores.get('benefits_score', 90)}分")
                 cs3.metric("工作强度/少加班度", f"{c_scores.get('overtime_score', 75)}分")
-                cs4.metric("假期制度丰富度", f"{c_scores.get('holiday_score', 80)}分")
+                cs4.metric("假期制度丰富度", f"{c_scores.get('holiday_score', 85)}分")
                 st.markdown("</div>", unsafe_allow_html=True)
                 
-                st.markdown(f"### 📋 {company_name} 当前热招职位明细清单")
+                st.markdown(f"### 📋 {company_name} 当前热招校招/实习岗位清单")
                 open_pos = res.get('open_positions_with_details', [])
                 if not open_pos:
                     st.info("暂无具体的抓取职位明细。")
@@ -398,10 +397,10 @@ elif page == "公司情报站":
                         <div class="raised-card" style="padding: 15px;">
                             <div style="display: flex; justify-content: space-between;">
                                 <h4 style="margin: 0; color: #1b4332;">🔥 {op_title}</h4>
-                                <span class="hiring-badge"><span class="green-dot"></span>急招</span>
+                                <span class="hiring-badge"><span class="green-dot"></span>校招/实习急招</span>
                             </div>
                             <p style="margin: 6px 0; color: #52796f; font-size: 14px;"><strong>所属部门:</strong> {op.get('department')}</p>
-                            <p style="margin: 0; color: #2d6a4f; font-size: 14px;"><strong>核心要求:</strong> {op.get('requirements')}</p>
+                            <p style="margin: 0; color: #2d6a4f; font-size: 14px;"><strong>基础要求:</strong> {op.get('requirements')}</p>
                         </div>
                         """, unsafe_allow_html=True)
                         if st.button(f"🎯 联动解析【{op_title}】岗位", key=f"comp_jump_{op_title}"):
@@ -411,54 +410,54 @@ elif page == "公司情报站":
 
 # ---------------- 5. HRD 简历特训与高级优化 ----------------
 elif page == "JD 简历优化":
-    st.markdown("## 📝 HRD 简历特训与全维度高分优化")
-    st.markdown("<p style='color: #52796f;'>请先选择你要申请的职位、公司及工作地点，系统将精准定位申请要求、拆解 JD、对照简历并给出多维打分、HRD 级润色、量化旁侧批注及面试官追问！</p>", unsafe_allow_html=True)
+    st.markdown("## 📝 校招/实习简历特训与全维度高分优化")
+    st.markdown("<p style='color: #52796f;'>针对应届生、管培生及实习生求职，系统将精准对标 JD，提供六维打分、量化话术润色及面试官追问防穿帮批注！</p>", unsafe_allow_html=True)
     
     col_s1, col_s2, col_s3 = st.columns(3)
     with col_s1:
-        target_pos_input = st.text_input("🎯 目标职位：", value=st.session_state.get("target_position", "大模型产品经理"))
+        target_pos_input = st.text_input("🎯 目标职位：", value=st.session_state.get("target_position", "AI产品管培生"))
     with col_s2:
-        target_comp_input = st.text_input("🏢 目标公司：", value=st.session_state.get("target_company", "微软 (Microsoft)"))
+        target_comp_input = st.text_input("🏢 目标公司：", value=st.session_state.get("target_company", "腾讯 (Tencent)"))
     with col_s3:
-        target_loc_input = st.text_input("📍 工作地点：", value="北京 / 远程")
+        target_loc_input = st.text_input("📍 工作地点：", value="北京 / 深圳 / 远程")
         
-    jd_text = st.text_area("📋 请粘贴目标岗位的 JD（招聘要求）原文：", height=150, placeholder="在此粘贴招聘 JD 原文...")
-    user_resume = st.text_area("📄 请粘贴你目前的原始简历内容：", height=200, placeholder="在此粘贴你的工作经历、项目经历等原始简历文本...")
+    jd_text = st.text_area("📋 请粘贴目标岗位的校招/实习 JD 原文：", height=150, placeholder="在此粘贴招聘 JD 原文...")
+    user_resume = st.text_area("📄 请粘贴你目前的原始简历内容（校园经历、社团、比赛、实习等）：", height=200, placeholder="在此粘贴你的简历文本...")
     
-    if st.button("🚀 开始 HRD 级深度对标与面试全维特训", type="primary"):
+    if st.button("🚀 开始校招专家级深度对标与面试特训", type="primary"):
         if not jd_text.strip() or not user_resume.strip():
             st.warning("请完整填写 JD 原文和你的原始简历内容！")
         else:
-            with st.spinner("资深 HRD 正在进行申请表分析、六维评分、量化批注、面试追问与能力信号评估..."):
+            with st.spinner("校招专家正在进行网申要求分析、六维评分、量化批注与面试官信号评估..."):
                 res = ai.advanced_resume_analysis(target_pos_input, target_comp_input, target_loc_input, jd_text, user_resume)
                 if "error" in res:
                     st.error(f"调用出错: {res['error']}")
                 else:
-                    st.success("HRD 级简历诊断与面试特训完成！")
+                    st.success("简历诊断与特训完成！")
                     
                     # 1. 招聘经理信号灯评估
                     st.markdown("""
                     <div class="raised-card" style="border-left: 6px solid #2e7d32; background: #fafdfb;">
-                        <h3 style="color:#1b4332; margin-top:0;">🚦 招聘经理（Hiring Manager）第一印象信号灯</h3>
+                        <h3 style="color:#1b4332; margin-top:0;">🚦 校招面试官第一印象潜力信号灯</h3>
                     """, unsafe_allow_html=True)
                     hm_signals = res.get('hiring_manager_signals', {})
-                    st.write("**🟢 前三个最强能力信号：**")
+                    st.write("**🟢 前三个最强潜力信号：**")
                     for sig in hm_signals.get('strong_signals', []):
                         st.markdown(f"- ✅ {sig}")
-                    st.write("**🔴 最弱的能力信号 / 防御红线（需在面试中重点弥补）：**")
+                    st.write("**🔴 最弱的能力信号 / 防御红线（需重点弥补）：**")
                     st.markdown(f"- ⚠️ {hm_signals.get('weak_signal', '')}")
                     st.markdown("</div>", unsafe_allow_html=True)
 
-                    # 2. 申请表要求与 JD 拆解
+                    # 2. 网申要求与 JD 拆解
                     st.markdown("""
                     <div class="raised-card">
-                        <h3 style="color:#1b4332; margin-top:0;">📌 申请表必备材料与 JD 核心拆解</h3>
+                        <h3 style="color:#1b4332; margin-top:0;">📌 网申必备材料与 JD 核心拆解</h3>
                     """, unsafe_allow_html=True)
-                    st.write("**申请表/底层信息项预测：**")
+                    st.write("**网申/申请表必备项预测：**")
                     for req in res.get('position_application_requirements', []):
                         st.markdown(f"- 📋 {req}")
                         
-                    st.write("**JD 核心要求：**")
+                    st.write("**校招 JD 核心要求：**")
                     core_bk = res.get('jd_core_breakdown', {})
                     st.markdown(f"- **核心职责：** {', '.join(core_bk.get('core_responsibilities', []))}")
                     st.markdown(f"- **关键技能：** {', '.join(core_bk.get('key_skills', []))}")
@@ -480,10 +479,10 @@ elif page == "JD 简历优化":
                     sc6.metric("ATS 友好度", f"{scores.get('ats_friendliness', 75)}分")
                     st.markdown("</div>", unsafe_allow_html=True)
                     
-                    # 4. HRD 总监总体点评
+                    # 4. 校招专家总体点评
                     st.markdown(f"""
                     <div class="raised-card" style="background: #f0f7f4;">
-                        <h3 style="color:#1b4332; margin-top:0;">💡 HRD 顾问深度总评</h3>
+                        <h3 style="color:#1b4332; margin-top:0;">💡 校招专家深度总评</h3>
                         <p style="font-size: 15px; color: #2d6a4f; line-height: 1.6;">{res.get('hrd_consultant_review', '')}</p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -508,11 +507,11 @@ elif page == "JD 简历优化":
                             st.markdown(f"- 🟡 {item}")
                         st.markdown("</div>", unsafe_allow_html=True)
                         
-                    # 6. 工作经历 / 项目经验高级润色（含量化旁侧批注）
+                    # 6. 校园/实习经历高级润色
                     st.markdown("""
                     <div class="raised-card">
-                        <h3 style="color:#1b4332; margin-top:0;">✍️ 工作经历 HRD 级高级润色与量化防穿帮旁侧批注</h3>
-                        <p style="color: #52796f; font-size: 14px;">润色后话术已将动词升级并加入量化指标，下方附带<strong>面试官追问防穿帮批注</strong>：</p>
+                        <h3 style="color:#1b4332; margin-top:0;">✍️ 校园/实习经历高级润色与防穿帮批注</h3>
+                        <p style="color: #52796f; font-size: 14px;">润色后话术已将动词升级并加入量化指标，下方附带<strong>面试防穿帮批注</strong>：</p>
                     </div>
                     """, unsafe_allow_html=True)
                     
@@ -522,16 +521,16 @@ elif page == "JD 简历优化":
                             <p style="color: #666; font-size: 13px; margin-bottom: 4px;"><strong>原话术片段 {idx}：** {exp.get('original_snippet')}</p>
                             <p style="color: #1b4332; font-size: 15px; font-weight: 600; margin-top: 8px;"><strong>🔥 润色后话术（高亮标注）：</strong></p>
                             <p style="background: #e8f5e9; padding: 10px; border-radius: 6px; color: #2e7d32; font-size: 15px;">{exp.get('optimized_snippet')}</p>
-                            <p style="color: #52796f; font-size: 13px; margin-top: 6px;"><strong>💡 顾问解析：</strong> {exp.get('reason_for_change')}</p>
-                            <p style="background: #fff8e1; padding: 10px; border-radius: 6px; color: #b78103; font-size: 13px; margin-top: 8px; border: 1px solid #ffe0b2;"><strong>🛡️ 量化指标旁侧批注（面试如何解释）：</strong> {exp.get('quantified_side_note')}</p>
+                            <p style="color: #52796f; font-size: 13px; margin-top: 6px;"><strong>💡 专家解析：</strong> {exp.get('reason_for_change')}</p>
+                            <p style="background: #fff8e1; padding: 10px; border-radius: 6px; color: #b78103; font-size: 13px; margin-top: 8px; border: 1px solid #ffe0b2;"><strong>🛡️ 防穿帮批注（面试如何解释）：</strong> {exp.get('quantified_side_note')}</p>
                         </div>
                         """, unsafe_allow_html=True)
 
                     # 7. 面试官高频追问 5 题
                     st.markdown("""
                     <div class="raised-card" style="border-left: 6px solid #1b4332;">
-                        <h3 style="color:#1b4332; margin-top:0;">🎤 面试官视角：看完你简历后最可能追问的 5 个灵魂考题</h3>
-                        <p style="color: #52796f; font-size: 14px;">资深面试官在仔细审阅你的简历后，通常会针对这些潜在漏洞或亮点进行深挖：</p>
+                        <h3 style="color:#1b4332; margin-top:0;">🎤 面试官视角：对应届生最可能追问的 5 个灵魂考题</h3>
+                        <p style="color: #52796f; font-size: 14px;">面试官在审阅你的在校简历后，通常会针对这些潜在漏洞进行深挖：</p>
                     </div>
                     """, unsafe_allow_html=True)
                     
@@ -546,7 +545,7 @@ elif page == "JD 简历优化":
                     # 8. ATS 过筛关键词
                     st.markdown("""
                     <div class="raised-card" style="border-left: 6px solid #2e7d32;">
-                        <h3 style="color:#1b4332; margin-top:0;">🛡️ ATS 机器过筛必须布局的核心关键词</h3>
+                        <h3 style="color:#1b4332; margin-top:0;">🛡️ 校招 ATS 机器过筛必须布局的核心关键词</h3>
                     """, unsafe_allow_html=True)
                     ats_kw = res.get('ats_keywords_must_have', [])
                     kw_html = "".join([f"<span style='background:#d8f3dc; color:#1b4332; padding:6px 12px; border-radius:6px; margin-right:8px; display:inline-block; margin-bottom:8px; font-weight:600; border: 1px solid #b7e4c7;'>🔑 {kw}</span>" for kw in ats_kw])
